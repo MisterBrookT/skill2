@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-label="Skill2 product preview">
+  <rect width="1400" height="820" rx="42" fill="#f8faf7"/>
+  <rect x="48" y="48" width="1304" height="724" rx="34" fill="#ffffff" stroke="#d8ddd3"/>
+  <rect x="88" y="88" width="1224" height="84" rx="22" fill="#1f2933"/>
+  <g transform="translate(112 101) scale(.38)">
+    <path d="M101 58H63c-14 0-24 8-24 21s10 21 24 21h34c13 0 22 8 22 20s-10 21-25 21H52" fill="none" stroke="#f59e0b" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M124 36h23v10h-12v7h11v10h-24v-9l12-8h-10z" fill="#2dd4bf"/>
+  </g>
+  <text x="190" y="138" fill="#f8faf7" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="30" font-weight="760">Skill2</text>
+  <text x="302" y="138" fill="#9aa7b2" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="20">skills for your skills</text>
+  <rect x="1082" y="111" width="94" height="38" rx="19" fill="#2dd4bf"/>
+  <text x="1107" y="136" fill="#12201e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="720">lint</text>
+  <rect x="1190" y="111" width="82" height="38" rx="19" fill="#f59e0b"/>
+  <text x="1213" y="136" fill="#241705" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="720">test</text>
+  <text x="120" y="242" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="54" font-weight="780">Manage agent skills like code.</text>
+  <text x="120" y="290" fill="#60707c" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="25">Build, test, package, audit, and prune reusable agent instructions inside any repo.</text>
+  <g transform="translate(120 346)">
+    <rect width="1160" height="310" rx="26" fill="#f5f7f1" stroke="#d9dfd2"/>
+    <g transform="translate(32 32)">
+      <rect width="278" height="246" rx="22" fill="#ffffff" stroke="#d8ddd3"/>
+      <text x="24" y="42" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Skill Pack</text>
+      <text x="24" y="74" fill="#6a7883" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">Codex-ready instructions</text>
+      <rect x="24" y="105" width="230" height="28" rx="14" fill="#fff3d7"/>
+      <text x="42" y="125" fill="#745018" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-build</text>
+      <rect x="24" y="145" width="208" height="28" rx="14" fill="#ddfbf5"/>
+      <text x="42" y="165" fill="#126258" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-test</text>
+      <rect x="24" y="185" width="220" height="28" rx="14" fill="#eef2f7"/>
+      <text x="42" y="205" fill="#3d4b59" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-package</text>
+    </g>
+    <g transform="translate(350 32)">
+      <rect width="460" height="246" rx="22" fill="#1f2933"/>
+      <text x="28" y="45" fill="#f8faf7" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Isolated skill run</text>
+      <text x="28" y="78" fill="#9aa7b2" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">fresh context, fixed case, measurable output</text>
+      <rect x="28" y="106" width="404" height="104" rx="16" fill="#111820"/>
+      <text x="52" y="137" fill="#2dd4bf" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">skill2 test skills/skill2-test</text>
+      <text x="52" y="168" fill="#f59e0b" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">activation: pass</text>
+      <text x="52" y="197" fill="#cdd6df" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">outcome: reproducible</text>
+    </g>
+    <g transform="translate(850 32)">
+      <rect width="278" height="246" rx="22" fill="#ffffff" stroke="#d8ddd3"/>
+      <text x="24" y="42" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Library Health</text>
+      <text x="24" y="74" fill="#6a7883" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">find what to keep or merge</text>
+      <line x1="36" y1="194" x2="238" y2="194" stroke="#d8ddd3"/>
+      <rect x="45" y="118" width="32" height="76" rx="8" fill="#f59e0b"/>
+      <rect x="96" y="92" width="32" height="102" rx="8" fill="#2dd4bf"/>
+      <rect x="147" y="139" width="32" height="55" rx="8" fill="#a7b2bd"/>
+      <rect x="198" y="108" width="32" height="86" rx="8" fill="#1f2933"/>
+    </g>
+  </g>
+  <g transform="translate(120 690)">
+    <rect width="168" height="38" rx="19" fill="#1f2933"/>
+    <text x="22" y="25" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">scaffold</text>
+    <rect x="184" width="124" height="38" rx="19" fill="#fff3d7"/>
+    <text x="214" y="25" fill="#745018" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">lint</text>
+    <rect x="324" width="126" height="38" rx="19" fill="#ddfbf5"/>
+    <text x="355" y="25" fill="#126258" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">scan</text>
+    <rect x="466" width="148" height="38" rx="19" fill="#eef2f7"/>
+    <text x="494" y="25" fill="#3d4b59" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">package</text>
+  </g>
+</svg>

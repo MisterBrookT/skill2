@@ -1,7 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Skill2 icon">
   <rect width="160" height="160" rx="36" fill="#1f2933"/>
-  <path d="M42 50h76v18H60v15h44c14 0 24 9 24 22 0 14-11 25-29 25H39v-18h59c8 0 12-3 12-8 0-4-4-7-11-7H56c-12 0-21-9-21-22V72c0-13 10-22 27-22z" fill="#f59e0b"/>
-  <path d="M101 34h26v10h-13v8h12v10h-25v-9l13-8h-13z" fill="#2dd4bf"/>
-  <circle cx="42" cy="42" r="8" fill="#2dd4bf"/>
-  <circle cx="119" cy="119" r="8" fill="#f59e0b"/>
+  <path d="M101 58H63c-14 0-24 8-24 21s10 21 24 21h34c13 0 22 8 22 20s-10 21-25 21H52" fill="none" stroke="#f59e0b" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M124 36h23v10h-12v7h11v10h-24v-9l12-8h-10z" fill="#2dd4bf"/>
 </svg>

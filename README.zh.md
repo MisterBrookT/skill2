@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/readme-hero.jpg" alt="Skill2 manages agent skills">
+  <img src="docs/readme-hero.svg" alt="Skill2 manages agent skills">
 </p>
 
 ## 为什么做
