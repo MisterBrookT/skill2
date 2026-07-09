@@ -26,6 +26,7 @@ Most existing tools stop at validation. Skill2 aims at library governance.
 ```bash
 skill2 scan ~/workspace/my-agent-config/skills --json > skill2-scan.json
 skill2 usage --codex ~/.codex --claude ~/.claude --opencode ~/.config/opencode --json > skill2-usage.json
+skill2 test ./skills/agent-search --agent codex --cases cases/agent-search.yaml --isolate
 skill2 report --scan skill2-scan.json --usage skill2-usage.json --out report.html
 skill2 suggest --repo ~/workspace/my-agent-config
 ```
@@ -36,6 +37,7 @@ skill2 suggest --repo ~/workspace/my-agent-config
 | --- | --- |
 | Scan | structure issues, token size, references, scripts, duplicate descriptions |
 | Usage | skill activation candidates from local harness logs or hooks |
+| Test | isolated scenario runs: should activate, should not activate, should satisfy assertions |
 | Quality | routing tests, confusion matrix, Hit@1/Hit@5 |
 | Report | dashboard for hot/cold/unused skills and risk flags |
 | Suggest | keep, merge, downgrade, projectize, delete |
@@ -50,6 +52,7 @@ Reproduce one real maintenance decision:
 
 - [MVP](docs/MVP.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Isolated testing](docs/ISOLATED_TESTING.md)
 - [Prior art](docs/PRIOR_ART.md)
 
 ## License

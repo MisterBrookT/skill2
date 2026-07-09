@@ -6,6 +6,7 @@
 skill2
   scan      read skill files
   usage     read local logs / hook events
+  test      run isolated skill scenarios
   report    build dashboard
   suggest   produce maintenance actions
 ```
@@ -41,6 +42,18 @@ skill2
 
 ```json
 {
+  "test_case": {
+    "name": "core trigger",
+    "prompt": "research prior art for agent skill testing",
+    "expect_activation": "agent-search",
+    "expect_not_activation": [],
+    "assertions": [{"type": "contains", "value": "prior art"}]
+  }
+}
+```
+
+```json
+{
   "suggestion": {
     "action": "downgrade_to_reference",
     "target": "smart-fetch",
@@ -55,10 +68,11 @@ skill2
 
 1. Parse skill tree.
 2. Parse usage events.
-3. Join by normalized skill name and canonical path.
-4. Compute metrics.
-5. Run suggestion rules.
-6. Render HTML + JSON.
+3. Run isolated scenarios when requested.
+4. Join by normalized skill name and canonical path.
+5. Compute metrics.
+6. Run suggestion rules.
+7. Render HTML + JSON.
 
 ## Event Confidence
 
@@ -87,3 +101,34 @@ Store locally:
 ```
 
 No network. No hosted telemetry.
+
+## Test Runner
+
+`skill2 test` creates an isolated harness home:
+
+```text
+tmp/
+  home/
+    .codex/
+      AGENTS.md
+    .agents/
+      skills/
+        target-skill/
+          SKILL.md
+  work/
+```
+
+Codex first detection:
+
+- high confidence if runtime exposes explicit skill event.
+- current fallback: read of exact `skills/<name>/SKILL.md` path.
+- output assertions run separately from activation detection.
+
+Test result labels:
+
+- `activation_pass`
+- `activation_gap`
+- `false_positive`
+- `outcome_pass`
+- `outcome_fail`
+- `inconclusive`

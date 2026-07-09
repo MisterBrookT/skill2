@@ -26,6 +26,7 @@ Commands:
 ```bash
 skill2 scan <skills_dir> --json
 skill2 usage --codex ~/.codex --json
+skill2 test <skill_dir> --agent codex --cases <cases.yaml> --isolate
 skill2 report --scan scan.json --usage usage.json --out report.html
 skill2 suggest --repo <repo>
 ```
@@ -37,6 +38,7 @@ skill2 suggest --repo <repo>
 - Do not upload transcripts.
 - Treat usage events as approximate until confidence labels mature.
 - Do not auto-delete skills.
+- Isolated tests must not inherit user/global skills unless the case opts in.
 
 ## Test Fixture
 
@@ -51,3 +53,13 @@ Expected first reproduced decision:
 ```text
 search-strategy + smart-fetch + internet-reach -> agent-search references
 ```
+
+## Skill Test Protocol
+
+Project skill:
+
+```text
+.agents/skills/isolated-skill-test/SKILL.md
+```
+
+Use it before implementing `skill2 test`.

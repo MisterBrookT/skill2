@@ -66,7 +66,31 @@ Generate local HTML:
 - missing references
 - merge/downgrade candidates
 
-### 4. suggest
+### 4. test
+
+Input:
+
+- one skill directory
+- scenario cases
+- target harness: `codex` first
+
+Case zones:
+
+- core positive: should activate
+- adjacent positive: should activate
+- negative: should not activate
+- outcome: should produce expected response markers
+
+Isolation:
+
+- temp home
+- temp skill root containing only target skill
+- empty working directory unless fixture specified
+- no user global rules
+- no unrelated skills
+- no hidden prior context
+
+### 5. suggest
 
 Initial rules:
 
@@ -80,6 +104,7 @@ Initial rules:
 
 - `skill2 scan ~/workspace/my-agent-config/skills` emits useful JSON.
 - `skill2 usage --codex ~/.codex` extracts at least one real skill path signal.
+- `skill2 test <skill>` runs positive/negative scenarios in isolated Codex mode.
 - `skill2 report` creates readable local HTML.
 - `skill2 suggest` reproduces the `agent-search` consolidation decision.
 
