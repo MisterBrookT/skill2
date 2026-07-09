@@ -4,6 +4,8 @@ Skills for your skills.
 
 Skill2 is a local toolkit for maintaining agent skill libraries: lint the files, measure real usage, visualize hot and cold skills, and suggest what to keep, merge, downgrade, or delete.
 
+Direction: Skill2 is skills-first. CLI is scaffolding and deterministic checks used by those skills.
+
 [中文](README.zh.md)
 
 ## Status
@@ -51,6 +53,7 @@ Reproduce one real maintenance decision:
 ## Docs
 
 - [MVP](docs/MVP.md)
+- [Product direction](docs/PRODUCT_DIRECTION.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Isolated testing](docs/ISOLATED_TESTING.md)
 - [Prior art](docs/PRIOR_ART.md)

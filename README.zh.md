@@ -4,6 +4,8 @@
 
 Skill2 是本地技能库维护工具：检查 skill 文件、统计真实调用、可视化高频/低频 skill，并建议保留、合并、降级、项目化或删除。
 
+方向：Skill2 是 skills-first。CLI 是脚手架和确定性检查工具，供这些 skills 调用。
+
 [English](README.md)
 
 ## 状态
@@ -51,6 +53,7 @@ skill2 suggest --repo ~/workspace/my-agent-config
 ## 文档
 
 - [最小版本](docs/MVP.md)
+- [产品方向](docs/PRODUCT_DIRECTION.md)
 - [架构](docs/ARCHITECTURE.md)
 - [隔离测试](docs/ISOLATED_TESTING.md)
 - [先例调研](docs/PRIOR_ART.md)

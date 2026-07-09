@@ -2,9 +2,9 @@
 
 ## Project
 
-Skill2 = local governance tool for agent skill libraries.
+Skill2 = skills-first toolkit for building, testing, packaging, and maintaining agent skills.
 
-Goal: lint skills, measure real usage, visualize hot/cold skills, suggest keep/merge/downgrade/projectize/delete.
+Goal: provide installable skills that teach other agents how to build/test/package/audit/prune skills. CLI supplies scaffolding, lint, isolated tests, usage parsing, and reports.
 
 ## Current State
 
@@ -14,6 +14,7 @@ Start with:
 
 - `README.md`
 - `docs/MVP.md`
+- `docs/PRODUCT_DIRECTION.md`
 - `docs/ARCHITECTURE.md`
 - `docs/PRIOR_ART.md`
 
