@@ -1,93 +1,96 @@
-# Skill2
+<p align="center">
+  <img src="docs/readme-icon.svg" width="96" alt="Skill2 icon">
+</p>
 
-给 skill 的 skill。
+<h1 align="center">Skill2</h1>
 
-Skill2 是一个 skill 包，附带可选 CLI。目标是在别人的仓库里帮助 agent 构建、测试、打包、审计、清理 skills。
+<p align="center">
+  给 skill 的 skill。
+</p>
 
-Skills 是产品界面。CLI 是脚手架和确定性检查工具，供这些 skills 调用。
+<p align="center">
+  一个 skill 包，附带可选 CLI，用来在你的仓库里构建、测试、打包、审计、清理 agent skills。
+</p>
 
-[English](README.md)
+<p align="center">
+  <a href="README.md">English</a>
+</p>
 
-## 状态
+<p align="center">
+  <img alt="GitHub stars" src="https://img.shields.io/github/stars/MisterBrookT/skill2?style=flat-square">
+  <img alt="License" src="https://img.shields.io/github/license/MisterBrookT/skill2?style=flat-square">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1f2933?style=flat-square">
+  <img alt="Local first" src="https://img.shields.io/badge/local--first-no%20telemetry-2dd4bf?style=flat-square">
+</p>
 
-早期仓库。Skill 包已存在。CLI 当前支持 `scaffold skill`、`lint`、`scan`。
+<p align="center">
+  <img src="docs/readme-flow.svg" alt="Skill2 workflow">
+</p>
 
 ## 为什么做
 
-Agent skills 正在变成 package-like 的东西。技能库也需要像代码一样维护：
+Agent skills 正在变成类似 package 的东西。一个仓库可以携带可复用的 instructions、references、scripts、tests，让 agent 学会怎么在这个仓库里工作。
 
-- lint：frontmatter、description、断链、危险脚本
-- packaging hygiene：secrets、机器本地路径、脚本权限
-- coverage：哪些 skill 真的触发过
-- analytics：高频、低频、从未调用、共现
-- pruning：删除、合并、降级为 reference、移动到项目级
-
-现有工具多停在校验。Skill2 做治理闭环。
+Skill2 给这一层补维护闭环：创建 skill，测试是否触发，打包给别人安装，审计整个库，清理不再值得保留的 skill。
 
 ## 安装
 
 ```bash
-git clone https://github.com/MisterBrookT/skill2.git
-cd skill2
-./install.sh codex
+curl -fsSL https://raw.githubusercontent.com/MisterBrookT/skill2/main/install.sh | bash -s -- codex
 ```
 
-手动装到某个 repo：
-
-```bash
-cp -R skills/skill2-* /path/to/repo/.agents/skills/
-```
+这会把 Skill2 skill 包安装到 `~/.agents/skills`。无 telemetry。无托管服务。
 
 ## Skill 包
 
-- `skill2-build`：创建或改进 skill。
-- `skill2-test`：隔离测试触发和输出。
-- `skill2-package`：把 skill repo 做成可安装开源包。
-- `skill2-audit`：审计 skill library。
-- `skill2-prune`：建议保留、合并、降级、项目化、删除。
+| Skill | 用途 |
+| --- | --- |
+| `skill2-build` | 创建或改进 skill。 |
+| `skill2-test` | 隔离测试触发和输出。 |
+| `skill2-package` | 把 skill repo 做成可安装包。 |
+| `skill2-audit` | 扫描 skill library 的结构和安全问题。 |
+| `skill2-prune` | 建议保留、合并、降级、项目化、删除。 |
 
 ## CLI
+
+CLI 是给 skills 调用的确定性助手。
+
+已实现：
 
 ```bash
 skill2 scaffold skill my-skill --description "Use when ..."
 skill2 lint skills
-skill2 scan ~/workspace/my-agent-config/skills --json > skill2-scan.json
+skill2 scan skills --json
 ```
 
-计划命令：
+计划：
 
 ```bash
-skill2 usage --codex ~/.codex --claude ~/.claude --opencode ~/.config/opencode --json > skill2-usage.json
-skill2 test ./skills/agent-search --agent codex --cases cases/agent-search.yaml --isolate
-skill2 report --scan skill2-scan.json --usage skill2-usage.json --out report.html
-skill2 suggest --repo ~/workspace/my-agent-config
+skill2 test ./skills/my-skill --agent codex --cases cases/my-skill.yaml --isolate
+skill2 usage --codex ~/.codex --json
+skill2 report --out report.html
+skill2 suggest --repo .
 ```
 
-## 核心层
+## 本地检查
 
-| 层 | 输出 |
-| --- | --- |
-| 扫描 | 结构问题、token 体积、引用、脚本、重复描述 |
-| 使用 | 从本地 harness 日志或 hook 抽 skill 调用候选 |
-| 测试 | 隔离场景运行：应触发、不应触发、输出断言 |
-| 质量 | 路由测试、混淆矩阵、Hit@1/Hit@5 |
-| 报告 | 高频/低频/未用 skill 和风险 |
-| 建议 | 保留、合并、降级、项目化、删除 |
-
-## 第一目标
-
-复现一个真实维护决策：
-
-`search-strategy`、`smart-fetch`、`internet-reach` 应从顶层 skill 降级到 `agent-search/references/`。
+```bash
+python3 -m unittest discover -s tests
+PYTHONPATH=src python3 -m skill2.cli lint skills
+```
 
 ## 文档
 
-- [最小版本](docs/MVP.md)
 - [产品方向](docs/PRODUCT_DIRECTION.md)
+- [最小版本](docs/MVP.md)
 - [架构](docs/ARCHITECTURE.md)
 - [隔离测试](docs/ISOLATED_TESTING.md)
 - [先例调研](docs/PRIOR_ART.md)
 - [热门 skill 仓库结构参考](docs/SKILL_REPO_REFERENCES.md)
+
+## 状态
+
+早期。Skill 包已存在。CLI 支持 scaffold 和 lint。下一步是隔离运行时测试、usage 解析、dashboard 报告。
 
 ## License
 

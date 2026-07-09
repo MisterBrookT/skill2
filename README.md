@@ -1,93 +1,96 @@
-# Skill2
+<p align="center">
+  <img src="docs/readme-icon.svg" width="96" alt="Skill2 icon">
+</p>
 
-Skills for your skills.
+<h1 align="center">Skill2</h1>
 
-Skill2 is a skill pack plus optional CLI for building, testing, packaging, auditing, and pruning agent skills inside your own repos.
+<p align="center">
+  Skills for your skills.
+</p>
 
-Skills are the product surface. CLI is scaffolding and deterministic checks used by those skills.
+<p align="center">
+  A skill pack plus optional CLI for building, testing, packaging, auditing, and pruning agent skills inside your own repos.
+</p>
 
-[中文](README.zh.md)
+<p align="center">
+  <a href="README.zh.md">中文</a>
+</p>
 
-## Status
+<p align="center">
+  <img alt="GitHub stars" src="https://img.shields.io/github/stars/MisterBrookT/skill2?style=flat-square">
+  <img alt="License" src="https://img.shields.io/github/license/MisterBrookT/skill2?style=flat-square">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1f2933?style=flat-square">
+  <img alt="Local first" src="https://img.shields.io/badge/local--first-no%20telemetry-2dd4bf?style=flat-square">
+</p>
 
-Early repo. Skill pack exists. CLI currently supports `scaffold skill`, `lint`, and `scan`.
+<p align="center">
+  <img src="docs/readme-flow.svg" alt="Skill2 workflow">
+</p>
 
 ## Why
 
-Agent skills are becoming package-like. They need the same maintenance loop as code:
+Agent skills are becoming package-like. A repo can now carry reusable instructions, references, scripts, and tests that teach an agent how to work in that repo.
 
-- lint: broken frontmatter, long descriptions, missing references, unsafe scripts
-- packaging hygiene: secrets, machine-local paths, script permissions
-- coverage: which skills actually trigger
-- analytics: high-frequency, low-frequency, never-used, co-activated skills
-- pruning: delete, merge, downgrade to reference, or move to project-level scope
-
-Most existing tools stop at validation. Skill2 aims at library governance.
+Skill2 gives that layer its own maintenance loop: create skills, test whether they activate, package them for other people, audit the library, and prune what no longer earns its place.
 
 ## Install
 
 ```bash
-git clone https://github.com/MisterBrookT/skill2.git
-cd skill2
-./install.sh codex
+curl -fsSL https://raw.githubusercontent.com/MisterBrookT/skill2/main/install.sh | bash -s -- codex
 ```
 
-Manual repo-local install:
-
-```bash
-cp -R skills/skill2-* /path/to/repo/.agents/skills/
-```
+This installs the Skill2 skill pack into `~/.agents/skills`. No telemetry. No hosted service.
 
 ## Skill Pack
 
-- `skill2-build`: create or improve a skill.
-- `skill2-test`: isolated activation/outcome testing.
-- `skill2-package`: make a skill repo installable.
-- `skill2-audit`: scan a skill library.
-- `skill2-prune`: suggest keep/merge/downgrade/projectize/delete.
+| Skill | Use it for |
+| --- | --- |
+| `skill2-build` | Create or improve a skill. |
+| `skill2-test` | Isolated activation and outcome testing. |
+| `skill2-package` | Make a skill repo installable. |
+| `skill2-audit` | Scan a skill library for structure and safety issues. |
+| `skill2-prune` | Suggest keep, merge, downgrade, projectize, or delete. |
 
 ## CLI
+
+The CLI is a deterministic helper used by the skills.
+
+Implemented:
 
 ```bash
 skill2 scaffold skill my-skill --description "Use when ..."
 skill2 lint skills
-skill2 scan ~/workspace/my-agent-config/skills --json > skill2-scan.json
+skill2 scan skills --json
 ```
 
 Planned:
 
 ```bash
-skill2 usage --codex ~/.codex --claude ~/.claude --opencode ~/.config/opencode --json > skill2-usage.json
-skill2 test ./skills/agent-search --agent codex --cases cases/agent-search.yaml --isolate
-skill2 report --scan skill2-scan.json --usage skill2-usage.json --out report.html
-skill2 suggest --repo ~/workspace/my-agent-config
+skill2 test ./skills/my-skill --agent codex --cases cases/my-skill.yaml --isolate
+skill2 usage --codex ~/.codex --json
+skill2 report --out report.html
+skill2 suggest --repo .
 ```
 
-## Core Ideas
+## Local Checks
 
-| Layer | Output |
-| --- | --- |
-| Scan | structure issues, token size, references, scripts, duplicate descriptions |
-| Usage | skill activation candidates from local harness logs or hooks |
-| Test | isolated scenario runs: should activate, should not activate, should satisfy assertions |
-| Quality | routing tests, confusion matrix, Hit@1/Hit@5 |
-| Report | dashboard for hot/cold/unused skills and risk flags |
-| Suggest | keep, merge, downgrade, projectize, delete |
-
-## First Target
-
-Reproduce one real maintenance decision:
-
-`search-strategy`, `smart-fetch`, and `internet-reach` should be downgraded from top-level skills into `agent-search/references/`.
+```bash
+python3 -m unittest discover -s tests
+PYTHONPATH=src python3 -m skill2.cli lint skills
+```
 
 ## Docs
 
-- [MVP](docs/MVP.md)
 - [Product direction](docs/PRODUCT_DIRECTION.md)
+- [MVP](docs/MVP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Isolated testing](docs/ISOLATED_TESTING.md)
 - [Prior art](docs/PRIOR_ART.md)
 - [Popular skill repo references](docs/SKILL_REPO_REFERENCES.md)
+
+## Status
+
+Early. Skill pack exists. CLI supports scaffold and lint. Isolated runtime tests, usage parsing, and dashboard reports are next.
 
 ## License
 
