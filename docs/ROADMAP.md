@@ -175,6 +175,7 @@ CLI 产物默认写入 `.skill2/`：
 - Activation：结构化事件优先，精确路径读取 fallback。
 - Outcome：contains、regex、file exists/content、exit code、tool evidence。
 - 支持无 skill baseline、3 trials、JSON/JUnit 输出。
+- 新增 `skill2-publish`；同步收窄 `skill2-package` 触发与职责。
 - `skill2-build` 强制生成 case；用 Skill2 测 Skill2 自己。
 - 六个子 Skill 各有独立 case 文件：
 
@@ -200,7 +201,7 @@ cases/skill2-prune.yaml
 
 - `scaffold skill-repo`。
 - `package-check`：spec、断链、权限、secret、危险脚本、manifest、README/install。
-- 新增 `skill2-publish`：README、repo metadata、release、公开安装验收。
+- 落地 `skill2-publish`：README、repo metadata、release、公开安装验收。
 - `skill2-package` 收窄：只负责结构、manifest、installer、可复现产物；禁止 tag、push、upload。
 - Publish README 门：双语、品牌首屏、准确能力表、单一主安装命令、隐私/兼容性/限制。
 - Publish 外部动作门：dry-run → 用户确认 → tag/release/upload → 公开安装复测。
