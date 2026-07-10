@@ -10,8 +10,8 @@ Skill2 是 Superpowers 型 Skill Library。七个 Skills 管理其他 Skill Libr
 
 | 能力 | 状态 |
 | --- | --- |
-| scan/lint + JSON/SARIF | 完成 |
-| Codex 隔离测试 + baseline/JUnit | 核心完成 |
+| scan/lint + JSON/SARIF | 完成；格式层由 `skills-ref` 校验 |
+| Codex 隔离测试 + baseline/JUnit | 核心完成；人工 dogfood 进行中 |
 | package/publish preflight | 核心完成 |
 | Codex usage 日志适配器 | 完成 |
 | HTML renderer + suggest | 完成；已接 CLI |
@@ -47,6 +47,7 @@ APFS 不保存读取计数。FSEvents 不提供可靠读取事件。系统级监
 - projectize 只认显式 metadata；source hub 路径不再作为证据。
 - merge 只认直接 activation 共现；排除 broad scan。
 - `visualize`、`suggest` 已接 CLI；已生成真实报告与 README 截图。
+- `lint`：Agent Skills 格式错误委托 `skills-ref`；Skill2 保留安全、资源、治理规则。
 - installer 支持 dry-run、冲突拒绝、force、staging、provenance、CLI 安装。
 - README 英中同步；七个 Skills；一个主安装命令。
 - runner 每 trial checkpoint；支持 resume、skip-completed、early-stop。
@@ -62,17 +63,19 @@ APFS 不保存读取计数。FSEvents 不提供可靠读取事件。系统级监
 
 ## 剩余阻塞
 
-1. 全部 suites × 3 trials 未跑。
-2. package scanner 的 repo-source 覆盖仍需独立 code/secret scanner。
-3. 版本仍为 `0.0.0`；尚未生成 `0.1.0` artifact/checksum。
-4. tag、Release、PyPI、公开 URL 重装未做。
+1. 七个 Skills 的 `1 trial` suite + 整包 routing 未完整验收。
+2. 人工 dogfood 未完成：逐项看 with-skill/baseline 原始产物并签结论。
+3. package scanner 的 repo-source 覆盖仍需独立 code/secret scanner。
+4. 版本仍为 `0.0.0`；尚未生成 `0.1.0` artifact/checksum。
+5. tag、Release、PyPI、公开 URL 重装未做。
 
 ## 本轮顺序
 
-1. 跑全部 suites × 3 trials；失败项用 resume 续跑。
-2. 升至 `0.1.0`，重建 artifact/checksum。
-3. 输出 0.1 发布 dry-run。
-4. 远端动作等用户确认。
+1. 每个 suite 跑 `1 trial`；整包 routing 跑 `1 trial`。
+2. 人工审阅 [DOGFOOD.md](DOGFOOD.md) 七张验收卡；失败转为 case。
+3. 升至 `0.1.0`，重建 artifact/checksum。
+4. 输出 0.1 发布 dry-run。
+5. 远端发布等用户确认。
 
 ## 安全门
 
@@ -84,5 +87,5 @@ APFS 不保存读取计数。FSEvents 不提供可靠读取事件。系统级监
 
 ## Git 状态
 
-- 本地 checkpoint：`32b2a4c`。
-- 远端尚未推送此 checkpoint。
+- 当前 checkpoint：`b8605b5`。
+- 已推送 `main`。

@@ -55,14 +55,14 @@ README.md         # 公开发布界面
 
 ### M1：隔离测试
 
-状态：核心完成，长跑未收口。
+状态：核心完成；进入轻量 dogfood。
 
 - 临时 `HOME/CODEX_HOME`。
 - 单 Skill 与整包安装。
 - activation/outcome/baseline/JUnit/原始证据。
 - 七个单 Skill case 文件；整包 routing。
 
-已完成：resume、skip-completed、early-stop。待办：全部 cases × 3 trials。
+已完成：resume、skip-completed、early-stop。待办：每 suite `1 trial` + 人工审阅原始产物。
 
 ### M2：Package + Publish
 
@@ -106,7 +106,7 @@ README.md         # 公开发布界面
 状态：进行中。
 
 1. 完成：七个 Skills lint clean。
-2. 待办：七个隔离 suites × 3 + 整包 routing × 3。
+2. 待办：七个隔离 suites × 1 + 整包 routing × 1；人工审阅。
 3. 完成：Skill2 自己通过 package/publish/audit。
 4. 完成：README 英中双语；一个主安装命令；真实报告预览。
 5. 完成：clean install、重复安装、冲突、dry-run smoke。
@@ -122,7 +122,7 @@ skill2 scaffold skill <name>
 skill2 scaffold skill-repo <name>
 skill2 scan <path> --json
 skill2 lint <path> --format text|json|sarif
-skill2 test <skill> --cases <file> --baseline --trials 3
+skill2 test <skill> --cases <file> --baseline --trials 1
 skill2 package-check <repo>
 skill2 publish-check <repo>
 skill2 usage --codex ~/.codex --skills <library> --json
@@ -142,7 +142,7 @@ skill2 suggest --codex ~/.codex --skills <library> --json
 | `skill2-prune` | audit/visualize | 证据建议；不删除 |
 | `skill2-visualize` | audit/prune | 本地 HTML；不采集、不修改 |
 
-每个 Skill：正例、改写、邻接反例、无关反例、Outcome、without-skill baseline、3 trials。
+每个 Skill：正例、改写、邻接反例、无关反例、Outcome、without-skill baseline、1 trial、人类验收。
 
 ## 完成定义
 

@@ -64,7 +64,10 @@ body long enough for lint to skip short-body warning.
             self.assertEqual(result.returncode, 1)
             payload = json.loads(result.stdout)
             messages = [issue["message"] for issue in payload["issues"]]
-            self.assertIn("name `wrong-name` does not match directory `right-name`", messages)
+            self.assertIn(
+                "Directory name 'right-name' must match skill name 'wrong-name'",
+                messages,
+            )
 
     def test_lint_reports_local_path_and_secret(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

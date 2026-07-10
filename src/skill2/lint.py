@@ -4,6 +4,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from skills_ref import validate as validate_agent_skill
+
 from .models import Issue, LintResult, ScanResult, Severity, SkillRecord
 from .scan import scan_path
 
@@ -64,30 +66,11 @@ def _lint_skill(skill: SkillRecord) -> list[Issue]:
         issues.append(Issue(Severity.ERROR, path, source.frontmatter_error, "S2F001"))
         return issues
 
-    frontmatter = source.frontmatter or {}
-    name = frontmatter.get("name")
-    description = frontmatter.get("description")
-    expected = Path(path).parent.name
+    for message in validate_agent_skill(Path(path).parent):
+        issues.append(Issue(Severity.ERROR, path, message, "S2A001"))
 
-    if name is None or name == "":
-        issues.append(Issue(Severity.ERROR, path, "missing name", "S2F002"))
-    elif not isinstance(name, str):
-        issues.append(Issue(Severity.ERROR, path, "name must be a string", "S2F002"))
-    elif name != expected:
-        issues.append(
-            Issue(
-                Severity.ERROR,
-                path,
-                f"name `{name}` does not match directory `{expected}`",
-                "S2F003",
-            )
-        )
-
-    if description is None or description == "":
-        issues.append(Issue(Severity.ERROR, path, "missing description", "S2F004"))
-    elif not isinstance(description, str):
-        issues.append(Issue(Severity.ERROR, path, "description must be a string", "S2F004"))
-    elif len(description) > 140:
+    description = (source.frontmatter or {}).get("description")
+    if isinstance(description, str) and len(description) > 140:
         issues.append(Issue(Severity.WARN, path, "description too long", "S2Q001"))
 
     if len(source.body.strip()) < 40:
