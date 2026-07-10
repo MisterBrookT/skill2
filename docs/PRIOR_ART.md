@@ -93,3 +93,5 @@ skill files + isolated tests + local usage
 ## 搜索边界
 
 本轮检查 GitHub 仓库与官方规范。Reddit、X、小红书不作为实现规范来源；未纳入结论。
+
+每个 Skill 的具体设计映射见 [SKILL_DESIGN.md](SKILL_DESIGN.md)。

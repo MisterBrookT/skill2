@@ -85,7 +85,7 @@ skill2 visualize --skills skills --codex ~/.codex --out report.html
 
 Skill2 follows a Superpowers-style shape: skills are product; CLI is support. The repository dogfoods every rule it teaches. Package never publishes. Publish requires dry-run and explicit confirmation before tag, push, release, or upload. Prune never deletes automatically.
 
-See [product direction](docs/PRODUCT_DIRECTION.md), [roadmap](docs/ROADMAP.md), [isolated testing](docs/ISOLATED_TESTING.md), and [prior art](docs/PRIOR_ART.md).
+See [product direction](docs/PRODUCT_DIRECTION.md), [roadmap](docs/ROADMAP.md), [skill design](docs/SKILL_DESIGN.md), [isolated testing](docs/ISOLATED_TESTING.md), and [prior art](docs/PRIOR_ART.md).
 
 ## Development
 

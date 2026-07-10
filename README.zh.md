@@ -85,7 +85,7 @@ skill2 visualize --skills skills --codex ~/.codex --out report.html
 
 Skill2 采用 Superpowers 型结构：Skills 是产品，CLI 是脚手架。仓库必须符合自己教的规则。Package 不发布。Publish 在 tag、push、Release、upload 前必须 dry-run 并获得明确确认。Prune 不自动删除。
 
-详见[产品定位](docs/PRODUCT_DIRECTION.md)、[路线图](docs/ROADMAP.md)、[隔离测试](docs/ISOLATED_TESTING.md)、[先例调研](docs/PRIOR_ART.md)。
+详见[产品定位](docs/PRODUCT_DIRECTION.md)、[路线图](docs/ROADMAP.md)、[Skill 设计依据](docs/SKILL_DESIGN.md)、[隔离测试](docs/ISOLATED_TESTING.md)、[先例调研](docs/PRIOR_ART.md)。
 
 ## 开发
 
