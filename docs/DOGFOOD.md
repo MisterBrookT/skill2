@@ -41,6 +41,7 @@ baseline artifact:
 - `with-skill`：activation 通过；读到隔离 `skill2-build/SKILL.md`。
 - `baseline`：outcome 也通过。
 - `deterministic_uplift`：否。
+- 原始结果：[with-skill](../cases/dogfood/skill2-build/build-core/with-skill.md) / [baseline](../cases/dogfood/skill2-build/build-core/baseline.md)。
 - 人工结论：待填写。重点看 scope 判断、结构是否更短更准、测试场景是否真可用。
 
 ## 通过门
