@@ -16,7 +16,7 @@ Skill2 是 Superpowers 型 Skill Library。七个 Skills 管理其他 Skill Libr
 | Codex usage 日志适配器 | 完成 |
 | HTML renderer + suggest | 完成；已接 CLI |
 | `skill2-visualize` | 完成；核心/routing live trial 通过 |
-| 专业安装/README | 完成；等待 clean checkout smoke |
+| 专业安装/README | 完成；clean HOME smoke 通过 |
 | 0.1 Release | 未完成 |
 
 当前基线：42 个确定性 tests、Ruff 通过、七个 Skills lint clean。
@@ -53,17 +53,24 @@ APFS 不保存读取计数。FSEvents 不提供可靠读取事件。系统级监
 - runner 使用随机 run id；macOS Seatbelt 拒绝宿主 HOME；PATH 去掉用户/repo 工具。
 - visualize 核心测试相对 baseline 有 deterministic uplift；prune 相邻反例不再误触发。
 
+## 已验证
+
+- `package-check .`：通过。
+- `publish-check .`：通过。
+- clean HOME：dry-run、首次安装、重复安装、冲突拒绝、`--force` 覆盖通过。
+- wheel/sdist 构建通过；当前版本仍是 `0.0.0`，产物不发布。
+
 ## 剩余阻塞
 
 1. 全部 suites × 3 trials 未跑。
 2. package scanner 的 repo-source 覆盖仍需独立 code/secret scanner。
-3. clean worktree publish preflight 未跑。
-4. 0.1 wheel/sdist、tag、Release、PyPI 未做。
+3. 版本仍为 `0.0.0`；尚未生成 `0.1.0` artifact/checksum。
+4. tag、Release、PyPI、公开 URL 重装未做。
 
 ## 本轮顺序
 
 1. 跑全部 suites × 3 trials；失败项用 resume 续跑。
-2. clean checkout build、install、package/publish preflight。
+2. 升至 `0.1.0`，重建 artifact/checksum。
 3. 输出 0.1 发布 dry-run。
 4. 远端动作等用户确认。
 
@@ -77,5 +84,5 @@ APFS 不保存读取计数。FSEvents 不提供可靠读取事件。系统级监
 
 ## Git 状态
 
-- 已推送 checkpoint：`5e4dfdb`。
-- M1-M4 仍有本地未提交改动；不得回退。
+- 本地 checkpoint：`32b2a4c`。
+- 远端尚未推送此 checkpoint。

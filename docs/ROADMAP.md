@@ -66,18 +66,15 @@ README.md         # 公开发布界面
 
 ### M2：Package + Publish
 
-状态：检查器完成，安装发布未收口。
+状态：完成。
 
 - `scaffold skill-repo`
 - `package-check`
 - `publish-check`
 
-待办：
-
-- installer `--dry-run`、冲突报告、staging、原子替换。
-- 记录 source/ref/tree SHA。
-- README、manifest、版本一致。
-- 全新临时 HOME 安装 smoke。
+- installer：`--dry-run`、冲突报告、staging、原子替换、provenance。
+- clean HOME：首次安装、重复安装、冲突拒绝、`--force` 覆盖 smoke 通过。
+- `package-check`、`publish-check` 对 Skill2 自身通过。
 
 ### M3：Usage
 
@@ -106,17 +103,17 @@ README.md         # 公开发布界面
 
 ### M5：0.1 Dogfood 发布
 
-状态：未完成。
+状态：进行中。
 
-1. 七个 Skills lint clean。
-2. 七个隔离 suites + 整包 routing 通过。
-3. Skill2 自己通过 package/publish/audit。
-4. README 英中双语；一个主安装命令；真实报告预览。
-5. clean install、重复安装、冲突、dry-run smoke 通过。
-6. build `0.1.0` wheel/sdist；生成 checksums。
-7. 输出发布 dry-run。
+1. 完成：七个 Skills lint clean。
+2. 待办：七个隔离 suites × 3 + 整包 routing × 3。
+3. 完成：Skill2 自己通过 package/publish/audit。
+4. 完成：README 英中双语；一个主安装命令；真实报告预览。
+5. 完成：clean install、重复安装、冲突、dry-run smoke。
+6. 待办：版本升至 `0.1.0`，重建 wheel/sdist 与 checksums。
+7. 待办：输出发布 dry-run。
 8. 用户确认后才 tag、push tag、GitHub Release、PyPI upload。
-9. 从公开 URL 重装。
+9. 待办：从公开 URL 重装。
 
 ## CLI 目标
 
