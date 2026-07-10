@@ -1,5 +1,11 @@
 # 产品方向
 
+## 定位
+
+Skill2 是 agent skill 工程系统：用 skills 教 agent，用 CLI 提供确定性机制，用本地证据维护 skill 生命周期。
+
+不是 skill 目录、中心 registry、托管 telemetry，也不是单纯 linter。
+
 ## 核心判断
 
 Skill2 首先是一个 **skill 包**。
@@ -184,23 +190,24 @@ Agent 做判断：
 - 改写 skill 文本
 - 说明取舍
 
+规则分层：
+
+- 官方格式错误：`ERROR`
+- 安全、可移植性、安装风险：`WARN`
+- 社区 authoring 实践：`ADVICE`
+- usage/test 推导的维护建议：`INSIGHT`
+
 ## 安装故事
 
 ### 用户安装
 
-推荐：
+安装 Skill2 skills：
 
 ```bash
-npx skill2 init
+curl -fsSL https://raw.githubusercontent.com/MisterBrookT/skill2/main/install.sh | bash -s -- codex
 ```
 
-手动：
-
-```bash
-cp -R skills/skill2-* .agents/skills/
-```
-
-可选安装 CLI：
+0.1 发布后可选安装 CLI：
 
 ```bash
 uv tool install skill2
@@ -310,30 +317,11 @@ Skill2 要组合：
 - 本地使用记录分析
 - pruning dashboard
 
-## MVP 顺序
+## 实施顺序
 
-不要先做大而全 dashboard。
+数据契约 → 真实 scan → Codex 隔离测试 → package/audit → usage → report/suggest → 0.1 发布。
 
-先做一条强闭环：
-
-```text
-agent 写 skill
-→ CLI scaffold/lint
-→ 隔离测试证明 activation
-→ README 说明怎么安装
-```
-
-建议顺序：
-
-1. `skills/skill2-build`
-2. `skills/skill2-test`
-3. `skill2 scaffold skill`
-4. `skill2 lint`
-5. `skill2 test --agent codex --isolate`
-6. `skills/skill2-package`
-7. `skill2 report` 静态 HTML
-8. `skills/skill2-audit`
-9. `skills/skill2-prune`
+详细阶段、依赖、验收见 [路线图](ROADMAP.md)。
 
 ## 当前 repo 状态
 
@@ -353,8 +341,4 @@ skills/skill2-audit/SKILL.md
 skills/skill2-prune/SKILL.md
 ```
 
-下一步：
-
-```text
-实现 skill2 scaffold / lint / test 的最小 CLI。
-```
+当前 CLI 已支持 `scaffold`、`lint`，`scan` 暂为 `lint` 别名。下一步按路线图 M0 执行。

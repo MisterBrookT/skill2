@@ -14,11 +14,13 @@ Skill2 不该只做 CLI。最终应是：
 skills-first repo + optional CLI + tests + install/package metadata
 ```
 
+规范来源分三层：官方兼容性契约、社区验证实践、Skill2 生命周期策略。不要把后两层冒充官方规范。
+
 ## 参考仓库
 
 | 仓库 | 规模/信号 | 结构特点 | Skill2 学什么 |
 | --- | --- | --- | --- |
-| [obra/superpowers](https://github.com/obra/superpowers) | 超高星；多 harness | `skills/`、多 plugin manifest、hooks、tests、docs/porting | 正式 `skills/` 分发；多 harness 打包；测试目录分平台 |
+| [obra/superpowers](https://github.com/obra/superpowers) | 多 harness；skills-first | `skills/` 单源、薄 adapter、测试、确定性打包 | Build 方法；内容与 harness 适配分层；行为测试 |
 | [anthropics/skills](https://github.com/anthropics/skills) | 官方 | `skills/<name>/SKILL.md`，可带 templates、fonts、SDK references | 资源随 skill 打包；重资产也放 skill 内 |
 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | 大型垂直库 | `skills/<name>/references/`、`scripts/`、CI scan、release | 大库要有 scanner、PR scan、安全 scan |
 | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | 超大集合 | `.codex/skills`、`.claude/commands`、plugin manifest、skills index | 大集合需要 index；但容易噪声膨胀 |
@@ -26,6 +28,7 @@ skills-first repo + optional CLI + tests + install/package metadata
 | [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) | 目录型 | README + CONTRIBUTING | 做发现入口，不做执行层 |
 | [Bhanunamikaze/Agentic-SEO-Skill](https://github.com/Bhanunamikaze/Agentic-SEO-Skill) | 单能力深 repo | 顶层 `SKILL.md`、resources、agents、scripts、reports | 单领域深 skill 可配很多 evidence scripts |
 | [obra/superpowers-marketplace](https://github.com/obra/superpowers-marketplace) | marketplace | marketplace manifest | marketplace repo 可很薄，只管索引 |
+| [steipete/agent-scripts](https://github.com/steipete/agent-scripts) | 个人 agent 工具集 | symlink、路径适配、冲突与失效链接处理 | 幂等 adapter；不复制个人目录假设 |
 
 ## 可复制模式
 
@@ -76,6 +79,14 @@ Skill2 应有：
 ```text
 tests/codex/
 tests/skill-cases/
+```
+
+行为测试必须再分：
+
+```text
+activation：该触发/不该触发
+outcome：触发后结果是否正确
+baseline：没有 skill 时结果如何
 ```
 
 ### 4. 引用和脚本随 skill 走
@@ -133,8 +144,4 @@ src/skill2/
 
 ## 下一步
 
-1. 实现 `skill2 scaffold skill`。
-2. 实现 `skill2 lint` 最小版。
-3. 实现 `skill2 test --agent codex --isolate`。
-4. 增加 `tests/codex/`。
-5. 补 `CHANGELOG.md`。
+见 [路线图](ROADMAP.md)。
