@@ -1,0 +1,38 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "PyYAML>=6.0.2,<7",
+#   "markdown-it-py>=3.0,<5",
+#   "skills-ref>=0.1.1,<0.2",
+# ]
+# ///
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+_ALLOWED = frozenset({'publish-check'})
+_RUNTIME = Path(__file__).resolve().parent / "_runtime"
+
+
+def main() -> None:
+    args = sys.argv[1:]
+    if args and args[0] == "--":
+        args = args[1:]
+    if not args or args[0] not in _ALLOWED:
+        allowed = ", ".join(sorted(_ALLOWED))
+        got = args[0] if args else "<missing>"
+        print(
+            f"skill2 runtime: command {got!r} not allowed; allowed: {allowed}",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    sys.path.insert(0, str(_RUNTIME))
+    from skill2.cli import main as cli_main
+
+    cli_main(args)
+
+
+if __name__ == "__main__":
+    main()
