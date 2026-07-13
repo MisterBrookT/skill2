@@ -2,12 +2,38 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 from skill2.package import package_check, publish_preflight, scaffold_skill_repo
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _skill2_package_repo(tmp: Path) -> Path:
+    """Packageable Skill2-marker repo with synced runtimes (temp only)."""
+    from skill2.bundle import RUNTIME_SPECS, sync_skill_runtimes
+
+    scaffold_skill_repo("skill2-mini", tmp)
+    root = tmp / "skill2-mini"
+    shutil.copytree(ROOT / "src" / "skill2", root / "src" / "skill2")
+    shutil.rmtree(root / "skills")
+    for name in RUNTIME_SPECS:
+        skill_dir = root / "skills" / name
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            (
+                f"---\nname: {name}\ndescription: \"Use when testing {name}.\"\n---\n\n"
+                f"# {name}\n\n## Workflow\n\n"
+                "1. Confirm outcome.\n2. Perform work.\n3. Verify result.\n"
+            ),
+            encoding="utf-8",
+        )
+    sync_skill_runtimes(root)
+    return root
 
 
 class PackageTest(unittest.TestCase):
@@ -30,6 +56,60 @@ class PackageTest(unittest.TestCase):
             self.assertFalse(result.has_errors, result.to_dict())
             self.assertEqual(result.schema_version, "1")
             self.assertEqual(result.to_dict()["issues"], [])
+
+    def test_package_check_rejects_stale_skill_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _skill2_package_repo(Path(tmp))
+            source = root / "src" / "skill2" / "scaffold.py"
+            source.write_text(
+                source.read_text(encoding="utf-8") + "\n# package-check-drift\n",
+                encoding="utf-8",
+            )
+            result = package_check(root)
+            self.assertTrue(result.has_errors, result.to_dict())
+            runtime_errors = [
+                issue
+                for issue in result.issues
+                if issue.rule_id == "P2R001" and "runtime" in issue.message
+            ]
+            self.assertTrue(runtime_errors, result.to_dict())
+            joined = " ".join(issue.path for issue in runtime_errors)
+            self.assertTrue(
+                "skill2-create" in joined or "runtime-manifest" in joined,
+                joined,
+            )
+
+    def test_package_check_rejects_missing_referenced_run_script(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _skill2_package_repo(Path(tmp))
+            run = root / "skills" / "skill2-create" / "scripts" / "run"
+            self.assertTrue(run.is_file())
+            run.unlink()
+            result = package_check(root)
+            self.assertTrue(result.has_errors, result.to_dict())
+            runtime_errors = [
+                issue
+                for issue in result.issues
+                if issue.rule_id == "P2R001" and "runtime" in issue.message
+            ]
+            self.assertTrue(runtime_errors, result.to_dict())
+            joined = " ".join(f"{issue.path} {issue.message}" for issue in runtime_errors)
+            self.assertIn("skill2-create", joined)
+            self.assertTrue("run" in joined or "scripts" in joined, joined)
+
+    def test_generic_skill_repo_without_runtime_bundle_still_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp), name="third-party-skill")
+            self.assertFalse((root / "src" / "skill2" / "bundle.py").is_file())
+            self.assertFalse(
+                any(root.glob("skills/*/scripts/.runtime-manifest.json")),
+            )
+            result = package_check(root)
+            self.assertFalse(result.has_errors, result.to_dict())
+            self.assertEqual(
+                [issue for issue in result.issues if issue.rule_id == "P2R001"],
+                [],
+            )
 
     def test_package_check_rejects_mismatched_claude_marketplace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

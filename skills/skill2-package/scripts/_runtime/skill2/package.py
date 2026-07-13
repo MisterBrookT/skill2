@@ -33,12 +33,14 @@ _INSTALL_COMMAND_RE = re.compile(
 )
 _IGNORED_DIRS = {
     ".skill2",
+    ".superpowers",
     ".git",
     ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
     ".venv",
     "__pycache__",
+    "_runtime",
     "node_modules",
     "src",
     "tests",
@@ -91,6 +93,7 @@ def package_check(path: Path) -> PackageResult:
     issues.extend(manifest_issues)
     issues.extend(_claude_marketplace_issues(root))
     issues.extend(_content_issues(root))
+    issues.extend(_runtime_integrity_issues(root))
     return _result(root, issues)
 
 
@@ -400,6 +403,29 @@ def _content_issues(root: Path) -> list[Issue]:
             issues.append(
                 Issue(Severity.WARN, str(candidate), "contains pipe-to-shell command", "P2S004")
             )
+    return issues
+
+
+def _is_skill2_runtime_repo(root: Path) -> bool:
+    """Gate: Skill2 source markers only; generic third-party scaffolds skip."""
+    return (root / "src" / "skill2" / "bundle.py").is_file()
+
+
+def _runtime_integrity_issues(root: Path) -> list[Issue]:
+    if not _is_skill2_runtime_repo(root):
+        return []
+    from .bundle import check_skill_runtimes
+
+    issues: list[Issue] = []
+    for relative in check_skill_runtimes(root):
+        issues.append(
+            Issue(
+                Severity.ERROR,
+                str(root / relative),
+                f"stale or missing skill runtime: {relative}",
+                "P2R001",
+            )
+        )
     return issues
 
 

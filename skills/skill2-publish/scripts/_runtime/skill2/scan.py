@@ -175,11 +175,24 @@ def _resource_files(skill_dir: Path, kind: str) -> set[str]:
     resource_dir = skill_dir / kind
     if not resource_dir.is_dir() or resource_dir.is_symlink():
         return set()
-    return {
-        path.relative_to(skill_dir).as_posix()
-        for path in resource_dir.rglob("*")
-        if path.is_file() and not path.is_symlink()
-    }
+    found: set[str] = set()
+    for path in resource_dir.rglob("*"):
+        if not path.is_file() or path.is_symlink():
+            continue
+        if kind == "scripts" and _is_generated_script_resource(path.relative_to(resource_dir)):
+            continue
+        found.add(path.relative_to(skill_dir).as_posix())
+    return found
+
+
+def _is_generated_script_resource(relative: Path) -> bool:
+    """Exclude package runtime tree and dotfiles from script inventory."""
+    parts = relative.parts
+    if not parts:
+        return False
+    if parts[0] == "_runtime":
+        return True
+    return any(part.startswith(".") for part in parts)
 
 
 def _string_value(frontmatter: dict[str, Any] | None, key: str) -> str:

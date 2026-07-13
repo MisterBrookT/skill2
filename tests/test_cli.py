@@ -134,6 +134,58 @@ Run script when deterministic work is needed.
             messages = [issue["message"] for issue in payload["issues"]]
             self.assertIn("script is not executable", messages)
 
+    def test_scan_skips_runtime_package_resources_as_scripts(self) -> None:
+        """Generated _runtime + dotfiles are package resources, not entry scripts."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill_dir = Path(tmp) / "skills" / "bundled-skill"
+            scripts = skill_dir / "scripts"
+            runtime = scripts / "_runtime" / "skill2"
+            nested = scripts / "helpers"
+            runtime.mkdir(parents=True)
+            nested.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                """---
+name: bundled-skill
+description: "Use when testing runtime bundle script inventory."
+---
+
+# bundled-skill
+
+Run scripts/run for deterministic work.
+""",
+                encoding="utf-8",
+            )
+            run = scripts / "run"
+            run.write_text("#!/usr/bin/env bash\necho ok\n", encoding="utf-8")
+            run.chmod(0o755)
+            (runtime / "module.py").write_text("# package resource\nx = 1\n", encoding="utf-8")
+            (scripts / ".runtime-manifest.json").write_text("{}\n", encoding="utf-8")
+            helper = nested / "tool.py"
+            helper.write_text("print('nested')\n", encoding="utf-8")
+            helper.chmod(0o755)
+
+            scan = run_cli("scan", str(skill_dir), "--json")
+            self.assertEqual(scan.returncode, 0, scan.stderr)
+            payload = json.loads(scan.stdout)
+            skill = payload["skills"][0]
+            self.assertEqual(
+                skill["scripts"],
+                ["scripts/helpers/tool.py", "scripts/run"],
+            )
+            self.assertNotIn("scripts/_runtime/skill2/module.py", skill["scripts"])
+            self.assertNotIn("scripts/.runtime-manifest.json", skill["scripts"])
+
+            lint = run_cli("lint", str(skill_dir), "--json")
+            self.assertEqual(lint.returncode, 0, lint.stderr)
+            lint_payload = json.loads(lint.stdout)
+            paths = [issue["path"] for issue in lint_payload["issues"]]
+            messages = [issue["message"] for issue in lint_payload["issues"]]
+            self.assertFalse(
+                any("_runtime" in path for path in paths),
+                lint_payload["issues"],
+            )
+            self.assertNotIn("script is not executable", messages)
+
     def test_scan_emits_stable_inventory(self) -> None:
         result = run_cli("scan", "skills", "--json")
         self.assertEqual(result.returncode, 0, result.stderr)

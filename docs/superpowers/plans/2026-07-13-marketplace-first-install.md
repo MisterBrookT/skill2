@@ -293,7 +293,7 @@ Expected: current installer requires uv tool install; Skill docs contain bare `s
 
 - [ ] **Step 3: Update Skill command examples**
 
-Use one variable-neutral path token:
+Use one variable-neutral path placeholder:
 
 ```bash
 uv run --script <skill-dir>/scripts/run -- visualize --skills <library> --codex ~/.codex

@@ -221,6 +221,20 @@ class RuntimeBundleTest(unittest.TestCase):
                 combined,
             )
 
+    def test_package_and_publish_runtimes_include_bundle(self) -> None:
+        from skill2.bundle import sync_skill_runtimes
+
+        with _make_temp_repo() as tmp:
+            repo = Path(tmp)
+            sync_skill_runtimes(repo)
+            for skill_name in ("skill2-package", "skill2-publish"):
+                runtime = repo / "skills" / skill_name / "scripts" / "_runtime" / "skill2"
+                self.assertTrue(
+                    (runtime / "bundle.py").is_file(),
+                    f"{skill_name} runtime missing bundle.py",
+                )
+                self.assertTrue((runtime / "package.py").is_file())
+
 
 if __name__ == "__main__":
     unittest.main()
