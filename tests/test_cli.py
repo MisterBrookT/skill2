@@ -241,6 +241,22 @@ Read [guide](references/guide.md#top) before doing deterministic work.
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout)["schema_version"], "1")
 
+    def test_cli_import_is_lazy(self) -> None:
+        code = (
+            "import json, sys; import skill2.cli; "
+            "print(json.dumps(sorted(name for name in sys.modules "
+            "if name in {'skill2.tester','skill2.usage','skill2.package'})))"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            env={"PYTHONPATH": str(ROOT / "src")},
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [])
+
 
 if __name__ == "__main__":
     unittest.main()

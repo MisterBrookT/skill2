@@ -6,18 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from .cases import load_case_suite
-from .claude_runner import run_claude
-from .codex_runner import run_codex
-from .lint import lint_scan
 from .models import SCHEMA_VERSION, Issue, LintResult, ScanResult, Severity
-from .package import package_check, publish_preflight, scaffold_skill_repo
-from .report import build_report, render_terminal
-from .scaffold import scaffold_skill
-from .scan import scan_path
-from .suggest import build_suggestions
-from .tester import run_test_suite, write_junit
-from .usage import parse_usage
 
 _SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 _SARIF_LEVEL = {
@@ -46,12 +35,16 @@ def _add_output_args(parser: argparse.ArgumentParser, *, default_path: str = "sk
 
 def _cmd_scaffold(args: argparse.Namespace) -> int:
     if args.kind == "skill":
+        from .scaffold import scaffold_skill
+
         created = scaffold_skill(
             args.name,
             Path(args.output_dir or "skills"),
             args.description,
         )
     else:
+        from .package import scaffold_skill_repo
+
         try:
             created = scaffold_skill_repo(args.name, Path(args.output_dir or "."))
         except (FileExistsError, ValueError) as exc:
@@ -63,6 +56,8 @@ def _cmd_scaffold(args: argparse.Namespace) -> int:
 
 
 def _cmd_scan(args: argparse.Namespace) -> int:
+    from .scan import scan_path
+
     result = scan_path(Path(args.path))
     if args.format == "json":
         _print_json(result.to_dict())
@@ -74,6 +69,9 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 
 
 def _cmd_lint(args: argparse.Namespace) -> int:
+    from .lint import lint_scan
+    from .scan import scan_path
+
     result = lint_scan(scan_path(Path(args.path)))
     if args.format == "json":
         _print_json(result.to_dict())
@@ -85,6 +83,11 @@ def _cmd_lint(args: argparse.Namespace) -> int:
 
 
 def _cmd_test(args: argparse.Namespace) -> int:
+    from .cases import load_case_suite
+    from .claude_runner import run_claude
+    from .codex_runner import run_codex
+    from .tester import run_test_suite, write_junit
+
     try:
         suite = load_case_suite(Path(args.cases))
         if suite.agent != args.agent:
@@ -122,6 +125,8 @@ def _cmd_test(args: argparse.Namespace) -> int:
 
 
 def _cmd_package_check(args: argparse.Namespace) -> int:
+    from .package import package_check, publish_preflight
+
     result = publish_preflight(Path(args.path)) if args.publish else package_check(Path(args.path))
     if args.format == "json":
         _print_json(result.to_dict())
@@ -135,6 +140,8 @@ def _cmd_package_check(args: argparse.Namespace) -> int:
 
 
 def _usage_from_args(args: argparse.Namespace):
+    from .usage import parse_usage
+
     return parse_usage(
         Path(args.skills),
         codex_root=_optional_root(args.codex),
@@ -163,6 +170,9 @@ def _cmd_usage(args: argparse.Namespace) -> int:
 
 
 def _cmd_suggest(args: argparse.Namespace) -> int:
+    from .scan import scan_path
+    from .suggest import build_suggestions
+
     try:
         scan = scan_path(Path(args.skills))
         usage = _usage_from_args(args)
@@ -181,6 +191,10 @@ def _cmd_suggest(args: argparse.Namespace) -> int:
 
 
 def _cmd_visualize(args: argparse.Namespace) -> int:
+    from .report import build_report, render_terminal
+    from .scan import scan_path
+    from .suggest import build_suggestions
+
     try:
         scan = scan_path(Path(args.skills))
         usage = _usage_from_args(args)
