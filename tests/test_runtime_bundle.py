@@ -111,6 +111,38 @@ class RuntimeBundleTest(unittest.TestCase):
             sync_skill_runtimes(repo)
             self.assertEqual(check_skill_runtimes(repo), ())
 
+    def test_check_reports_unexpected_runtime_file(self) -> None:
+        from skill2.bundle import check_skill_runtimes, sync_skill_runtimes
+
+        with _make_temp_repo() as tmp:
+            repo = Path(tmp)
+            sync_skill_runtimes(repo)
+            self.assertEqual(check_skill_runtimes(repo), ())
+
+            bogey = (
+                repo
+                / "skills"
+                / "skill2-create"
+                / "scripts"
+                / "_runtime"
+                / "skill2"
+                / "package.py"
+            )
+            bogey.write_text("# unexpected extra\n", encoding="utf-8")
+            stale = check_skill_runtimes(repo)
+            self.assertTrue(stale)
+            rel = bogey.relative_to(repo).as_posix()
+            self.assertIn(rel, stale)
+            # expected files still present must not be flagged alone as stale
+            self.assertFalse(
+                any(
+                    path.endswith("skill2/scaffold.py")
+                    or path.endswith("skill2/cli.py")
+                    for path in stale
+                ),
+                stale,
+            )
+
     def test_installed_create_runs_without_source_checkout(self) -> None:
         from skill2.bundle import sync_skill_runtimes
 

@@ -107,7 +107,6 @@ def _manifest_payload(
 
 def build_manifest(
     repo_root: Path,
-    skill_name: str,
     spec: RuntimeSpec,
     modules: tuple[str, ...],
 ) -> dict[str, Any]:
@@ -207,7 +206,7 @@ def sync_one_skill(repo_root: Path, skill_name: str, spec: RuntimeSpec) -> tuple
         shutil.copy2(src, dest)
         written.append(dest)
 
-    manifest = build_manifest(repo_root, skill_name, spec, modules)
+    manifest = build_manifest(repo_root, spec, modules)
     manifest_path = scripts / ".runtime-manifest.json"
     _write_text(manifest_path, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     written.append(manifest_path)
@@ -228,10 +227,10 @@ def sync_skill_runtimes(repo_root: Path) -> tuple[Path, ...]:
     return tuple(written)
 
 
-def _current_manifest(repo_root: Path, skill_name: str, spec: RuntimeSpec) -> dict[str, Any]:
+def _current_manifest(repo_root: Path, spec: RuntimeSpec) -> dict[str, Any]:
     src_root = repo_root / "src" / "skill2"
     modules = resolve_module_closure(src_root, spec.roots)
-    return build_manifest(repo_root, skill_name, spec, modules)
+    return build_manifest(repo_root, spec, modules)
 
 
 def check_skill_runtimes(repo_root: Path) -> tuple[str, ...]:
@@ -241,7 +240,8 @@ def check_skill_runtimes(repo_root: Path) -> tuple[str, ...]:
         scripts = _expected_runtime_paths(repo_root, skill_name)
         run_path = scripts / "run"
         manifest_path = scripts / ".runtime-manifest.json"
-        runtime_pkg = scripts / "_runtime" / "skill2"
+        runtime_root = scripts / "_runtime"
+        runtime_pkg = runtime_root / "skill2"
 
         markers = (
             str(run_path.relative_to(repo_root)),
@@ -259,18 +259,27 @@ def check_skill_runtimes(repo_root: Path) -> tuple[str, ...]:
             stale.append(str(manifest_path.relative_to(repo_root)))
             continue
 
-        expected = _current_manifest(repo_root, skill_name, spec)
+        expected = _current_manifest(repo_root, spec)
         if on_disk != expected:
             stale.append(str(manifest_path.relative_to(repo_root)))
             continue
 
+        expected_files = set(expected["files"])
         for rel, meta in expected["files"].items():
-            dest = scripts / "_runtime" / rel
+            dest = runtime_root / rel
             if not dest.is_file():
                 stale.append(str(dest.relative_to(repo_root)))
                 continue
             if _sha256_bytes(dest.read_bytes()) != meta["sha256"]:
                 stale.append(str(dest.relative_to(repo_root)))
+
+        # Flag extras not in expected manifest (stable relative paths).
+        for path in sorted(runtime_root.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(runtime_root).as_posix()
+            if rel not in expected_files:
+                stale.append(str(path.relative_to(repo_root)))
 
         expected_run = _render_run_script(spec)
         if run_path.read_text(encoding="utf-8") != expected_run:
