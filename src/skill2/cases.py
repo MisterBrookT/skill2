@@ -30,6 +30,8 @@ def load_case_suite(path: Path) -> CaseSuite:
 
     skill = _required_string(payload, "skill")
     agent = str(payload.get("agent") or "codex")
+    if agent not in {"codex", "claude"}:
+        raise ValueError("case agent must be `codex` or `claude`")
     raw_cases = payload.get("cases")
     if not isinstance(raw_cases, list) or not raw_cases:
         raise ValueError("case file needs a non-empty `cases` list")

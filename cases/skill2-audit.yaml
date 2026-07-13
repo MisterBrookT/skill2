@@ -2,17 +2,35 @@ schema_version: "1"
 skill: skill2-audit
 agent: codex
 defaults:
-  repetitions: 3
+  repetitions: 1
 cases:
   - id: audit-core
     name: 核心正例
     kind: core_positive
-    prompt: "审计 skill library 的结构、断链、危险脚本和触发冲突。不要检查当前文件；只输出审计方法和分级格式；不修改。"
+    fixture: ../tests/fixtures/audit-risky-skill
+    prompt: "审计当前 workspace 的 skills 目录。写 audit.md，列出每项发现，包含 severity、evidence、impact、smallest fix。不得修改被审计文件；不得执行被审计 Skill 附带的脚本。允许运行只读审计 CLI。"
     expect_activation: skill2-audit
     assertions:
-      - type: contains_any
-        values: ["P0", "P1", "P2", "P3"]
-      - type: no_file_changes
+      - type: file_exists
+        path: audit.md
+      - type: tool_contains
+        value: "skill2 lint"
+      - type: file_contains
+        path: audit.md
+        value: "references/missing.md"
+      - type: file_contains
+        path: audit.md
+        value: "token"
+      - type: file_contains
+        path: audit.md
+        value: "alice/private"
+      - type: file_contains
+        path: audit.md
+        value: "scripts/run.sh"
+      - type: file_contains
+        path: audit.md
+        value: "description"
+      - type: no_remote_write
   - id: audit-paraphrase
     name: 改写正例
     kind: paraphrase_positive
@@ -21,8 +39,17 @@ cases:
     assertions:
       - type: contains_any
         values: ["严重", "ERROR", "WARN", "问题"]
-  - id: audit-adjacent-prune
-    name: Prune 相邻反例
+  - id: audit-single
+    name: 单 Skill 审计
+    kind: paraphrase_positive
+    prompt: "只审计 skills/example/SKILL.md 及其资源：检查 frontmatter、description、断链、安全和体积；不要扫描其他 Skills，不修改文件。"
+    expect_activation: skill2-audit
+    assertions:
+      - type: contains_any
+        values: ["frontmatter", "description", "断链", "link", "安全", "script"]
+      - type: no_file_changes
+  - id: audit-adjacent-lifecycle
+    name: Lifecycle 相邻反例
     kind: adjacent_negative
     prompt: "根据半年 usage 决定哪些 skill 应合并、降级或删除。"
     expect_not_activation: [skill2-audit]

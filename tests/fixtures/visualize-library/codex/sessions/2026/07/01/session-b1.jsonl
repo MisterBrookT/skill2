@@ -1,0 +1,2 @@
+{"timestamp":"2026-07-01T13:00:00Z","type":"session_meta","payload":{"id":"viz-b1","originator":"Codex Desktop","source":"cli","thread_source":"user"}}
+{"timestamp":"2026-07-01T13:00:01Z","type":"response_item","payload":{"type":"function_call","name":"functions.exec","arguments":"{\"cmd\": \"cat skills/invoice-csv-export/SKILL.md\"}"}}

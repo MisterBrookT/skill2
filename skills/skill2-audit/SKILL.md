@@ -1,38 +1,61 @@
 ---
 name: skill2-audit
-description: "用户要审计 skill library 的结构、安全、断链、体积或触发冲突时使用。"
+description: "Use when reviewing one skill or a skill library for structural, safety, linkage, size, or static trigger-boundary problems."
 ---
 
-# Skill2 Audit
+# Audit Skill Libraries
 
-目标：找出 skill library 里会影响安装、触发、维护的问题。
+Find evidence-backed defects without changing the library.
 
-## 扫描项
+## Scope
 
-- 缺 `SKILL.md`
-- frontmatter 缺 `name` / `description`
-- `name` 和目录不一致
-- description 太长或像工作流摘要
-- 引用文件不存在
-- scripts 缺执行权限或有高风险命令
-- skill 过大，应该拆 references
-- 触发词重叠，容易误触发
-- repo-local skill 混进全局分发包
+| Target | Checks |
+| --- | --- |
+| One Skill | Frontmatter, description, links, resources, scripts, secrets, local paths, size |
+| Skill Library | Every single-Skill check plus duplicate names, ownership, scope, and static trigger overlap |
 
-## 输出
+## Ownership
 
-按严重级别：
+- Audit owns static structure, safety, references, metadata, and trigger overlap.
+- Test owns live activation and outcome behavior.
+- Visualize owns inventory/usage/test evidence and conservative lifecycle review candidates.
+- Create owns applying approved structural changes.
 
-- P0：安装/运行会坏
-- P1：会误触发/漏触发
-- P2：维护风险
-- P3：风格/清理
+## Method
 
-## CLI
+1. Run `skill2 lint <target> --json` first for a single Skill or a library. Save and use its static findings as evidence.
+2. Manually review what CLI cannot prove: description semantics, ownership, scope, and trigger overlap.
+3. If CLI is unavailable or fails: state limitation / `inconclusive`. Never claim clean.
+4. Do not execute scripts. Do not auto-fix.
+
+## Checks
+
+- Missing or invalid `SKILL.md` and frontmatter
+- Directory/name mismatch
+- Workflow summaries or ambiguous triggers in `description`
+- Broken relative links and unused resources
+- Non-executable or risky scripts
+- Secrets and accidental machine-local paths
+- Oversized bodies that should use progressive disclosure
+- Static trigger overlap across sibling skills
+- Project-only instructions inside a global package
+
+## Severity
+
+| Level | Meaning |
+| --- | --- |
+| P0 | Install or execution breaks |
+| P1 | Triggering or ownership is wrong |
+| P2 | Safety or maintenance risk |
+| P3 | Cleanup or style debt |
+
+## Output
+
+Return severity, file, evidence, impact, and smallest suggested change. Do not apply fixes unless requested.
 
 ```bash
-skill2 scan ./skills --json
-skill2 lint ./skills
+skill2 lint skills/<name> --json
+skill2 lint skills --json
+skill2 scan skills/<name> --json
+skill2 scan skills --json
 ```
-
-不要直接改。先给问题清单和建议 patch。

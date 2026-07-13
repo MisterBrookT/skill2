@@ -2,31 +2,62 @@ schema_version: "1"
 skill: skill2-visualize
 agent: codex
 defaults:
-  repetitions: 3
+  repetitions: 1
 cases:
   - id: visualize-core
     name: 核心正例
     kind: core_positive
-    prompt: "可视化 skill library 的库存、调用频率、最近调用、零调用和测试状态。只输出本地 HTML 报告方法；不要读取当前日志或改文件。"
+    fixture: ../tests/fixtures/visualize-library
+    prompt: "Using the skill inventory, local session usage root, and test-run records already present in this workspace as authoritative evidence, show a compact terminal visualization of ALL skills' direct-call frequencies as proportional ASCII or Unicode bars (one row per skill, including zero-call skills), plus inventory/test summary and conservative lifecycle review candidates. Return terminal output and evidence limits. Do not modify, delete, or move any skill or fixture files. Do not write a report file. Do not use boxed tables."
     expect_activation: skill2-visualize
     assertions:
-      - type: contains
+      - type: tool_contains
         value: "skill2 visualize"
-      - type: contains_any
-        values: ["session log", "session-log", "日志"]
+      - type: tool_contains
+        value: "skill2 suggest"
+      - type: contains
+        value: "release-notes-drafter"
+      - type: contains
+        value: "invoice-csv-export"
+      - type: contains
+        value: "standup-summary"
+      - type: contains_groups
+        groups:
+          - ["3"]
+          - ["1"]
+          - ["0", "never"]
+          - ["1/1"]
+          - ["0/1"]
+          - ["missing"]
+          - ["█", "▓", "▒", "░", "#", "="]
+          - ["zero-direct", "Zero or low", "not complete invocation", "never authorizes"]
+          - ["review candidate", "review candidates", "keep", "delete candidate", "suggest"]
+          - ["detailed review", "want a detailed", "是否需要详细", "是否要详细"]
+      - type: max_lines
+        value: 13
+      - type: not_regex
+        value: "[┌┐└┘├┤┬┴┼]"
       - type: no_file_changes
   - id: visualize-paraphrase
     name: 改写正例
     kind: paraphrase_positive
-    prompt: "我想看 skills 库哪些最近被调用、哪些从未见过使用记录，并把测试结果放进一个本地页面。"
+    prompt: "我想直接在终端看 skills 库哪些最近被调用、哪些没有直接调用记录，以及测试状态。"
     expect_activation: skill2-visualize
     assertions:
       - type: contains
         value: "skill2 visualize"
-  - id: visualize-adjacent-prune
-    name: Prune 相邻反例
-    kind: adjacent_negative
+  - id: visualize-lifecycle
+    name: 生命周期正例
+    kind: paraphrase_positive
     prompt: "根据半年 usage 决定 skill library 哪些应保留、合并、降级或删除。"
+    expect_activation: skill2-visualize
+    assertions:
+      - type: contains_any
+        values: ["证据", "usage", "review", "candidate", "keep", "suggest", "evidence"]
+  - id: visualize-adjacent-audit
+    name: Audit 相邻反例
+    kind: adjacent_negative
+    prompt: "扫描 skills 目录的坏链接和不安全脚本，只列问题。"
     expect_not_activation: [skill2-visualize]
   - id: visualize-unrelated
     name: 无关反例

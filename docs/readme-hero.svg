@@ -1,60 +1,142 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-label="Skill2 product preview">
-  <rect width="1400" height="820" rx="42" fill="#f8faf7"/>
-  <rect x="48" y="48" width="1304" height="724" rx="34" fill="#ffffff" stroke="#d8ddd3"/>
-  <rect x="88" y="88" width="1224" height="84" rx="22" fill="#1f2933"/>
-  <g transform="translate(112 101) scale(.38)">
-    <path d="M101 58H63c-14 0-24 8-24 21s10 21 24 21h34c13 0 22 8 22 20s-10 21-25 21H52" fill="none" stroke="#f59e0b" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M124 36h23v10h-12v7h11v10h-24v-9l12-8h-10z" fill="#2dd4bf"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-label="Skill2 capabilities">
+  <rect width="1400" height="760" fill="#fff"/>
+  <rect x="28" y="28" width="1344" height="704" rx="20" fill="#fff" stroke="#111" stroke-width="2"/>
+
+  <g transform="translate(68 60)">
+    <rect width="54" height="54" rx="11" fill="#111"/>
+    <path d="M32 15H20c-5 0-8 3-8 7s3 6 8 6h9c5 0 8 3 8 7s-4 7-9 7H15" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    <path d="M37 12l2-5 3 5m3 0 4-5 2 6" fill="#fff"/>
+    <rect x="37" y="10" width="14" height="11" rx="4" fill="#fff"/>
+    <circle cx="42" cy="15" r="1" fill="#111"/>
+    <circle cx="47" cy="15" r="1" fill="#111"/>
   </g>
-  <text x="190" y="138" fill="#f8faf7" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="30" font-weight="760">Skill2</text>
-  <text x="302" y="138" fill="#9aa7b2" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="20">skills for your skills</text>
-  <rect x="1082" y="111" width="94" height="38" rx="19" fill="#2dd4bf"/>
-  <text x="1107" y="136" fill="#12201e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="720">lint</text>
-  <rect x="1190" y="111" width="82" height="38" rx="19" fill="#f59e0b"/>
-  <text x="1213" y="136" fill="#241705" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="720">test</text>
-  <text x="120" y="242" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="54" font-weight="780">Manage agent skills like code.</text>
-  <text x="120" y="290" fill="#60707c" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="25">Build, test, package, audit, and prune reusable agent instructions inside any repo.</text>
-  <g transform="translate(120 346)">
-    <rect width="1160" height="310" rx="26" fill="#f5f7f1" stroke="#d9dfd2"/>
-    <g transform="translate(32 32)">
-      <rect width="278" height="246" rx="22" fill="#ffffff" stroke="#d8ddd3"/>
-      <text x="24" y="42" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Skill Pack</text>
-      <text x="24" y="74" fill="#6a7883" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">Codex-ready instructions</text>
-      <rect x="24" y="105" width="230" height="28" rx="14" fill="#fff3d7"/>
-      <text x="42" y="125" fill="#745018" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-build</text>
-      <rect x="24" y="145" width="208" height="28" rx="14" fill="#ddfbf5"/>
-      <text x="42" y="165" fill="#126258" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-test</text>
-      <rect x="24" y="185" width="220" height="28" rx="14" fill="#eef2f7"/>
-      <text x="42" y="205" fill="#3d4b59" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">skill2-package</text>
+  <text x="140" y="94" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="700">SKILL2</text>
+  <text x="140" y="120" fill="#666" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">SKILLS FOR YOUR SKILLS</text>
+  <text x="1090" y="92" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">LOCAL-FIRST / READ-ONLY</text>
+  <line x1="68" y1="142" x2="1332" y2="142" stroke="#111" stroke-width="2"/>
+
+  <g transform="translate(70 180)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <rect width="330" height="420" rx="12" fill="#0a0a0a"/>
+    <text x="26" y="42" fill="#fff" font-size="17" font-weight="700">$ skill2</text>
+    <text x="26" y="72" fill="#999" font-size="12">one library · six focused skills</text>
+    <line x1="26" y1="96" x2="304" y2="96" stroke="#444"/>
+
+    <g fill="#fff" font-size="14">
+      <text x="26" y="135">01  create</text>
+      <text x="26" y="180">02  test</text>
+      <text x="26" y="225">03  audit</text>
+      <text x="26" y="270">04  package</text>
+      <text x="26" y="315">05  publish</text>
+      <text x="26" y="360">06  visualize</text>
     </g>
-    <g transform="translate(350 32)">
-      <rect width="460" height="246" rx="22" fill="#1f2933"/>
-      <text x="28" y="45" fill="#f8faf7" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Isolated skill run</text>
-      <text x="28" y="78" fill="#9aa7b2" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">fresh context, fixed case, measurable output</text>
-      <rect x="28" y="106" width="404" height="104" rx="16" fill="#111820"/>
-      <text x="52" y="137" fill="#2dd4bf" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">skill2 test skills/skill2-test</text>
-      <text x="52" y="168" fill="#f59e0b" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">activation: pass</text>
-      <text x="52" y="197" fill="#cdd6df" font-family="SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" font-size="16">outcome: reproducible</text>
+    <g fill="#777" font-size="12" text-anchor="end">
+      <text x="304" y="135">write</text>
+      <text x="304" y="180">prove</text>
+      <text x="304" y="225">inspect</text>
+      <text x="304" y="270">install</text>
+      <text x="304" y="315">release</text>
+      <text x="304" y="360">understand</text>
     </g>
-    <g transform="translate(850 32)">
-      <rect width="278" height="246" rx="22" fill="#ffffff" stroke="#d8ddd3"/>
-      <text x="24" y="42" fill="#16212b" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="760">Library Health</text>
-      <text x="24" y="74" fill="#6a7883" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15">find what to keep or merge</text>
-      <line x1="36" y1="194" x2="238" y2="194" stroke="#d8ddd3"/>
-      <rect x="45" y="118" width="32" height="76" rx="8" fill="#f59e0b"/>
-      <rect x="96" y="92" width="32" height="102" rx="8" fill="#2dd4bf"/>
-      <rect x="147" y="139" width="32" height="55" rx="8" fill="#a7b2bd"/>
-      <rect x="198" y="108" width="32" height="86" rx="8" fill="#1f2933"/>
+    <text x="26" y="398" fill="#aaa" font-size="12">agent judgment + deterministic CLI</text>
+  </g>
+
+  <path d="M424 390h54" fill="none" stroke="#111" stroke-width="2"/>
+  <path d="M470 382l10 8-10 8" fill="none" stroke="#111" stroke-width="2"/>
+
+  <g transform="translate(502 180)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <g transform="translate(0 0)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">01  CREATE</text>
+      <text x="18" y="66" fill="#111" font-size="13">Design or restructure a Skill.</text>
+      <text x="18" y="91" fill="#666" font-size="12">scope · SKILL.md · resources</text>
+      <text x="18" y="111" fill="#666" font-size="12">minimal, spec-valid structure</text>
+      <g fill="none" stroke="#111" stroke-width="1.8" stroke-linejoin="round">
+        <path d="M328 65h25l10 10v28h-35z"/>
+        <path d="M353 65v10h10"/>
+        <path d="M342 81v14M335 88h14"/>
+      </g>
+    </g>
+    <g transform="translate(420 0)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">02  TEST</text>
+      <text x="18" y="66" fill="#111" font-size="13">Prove activation and outcome.</text>
+      <text x="18" y="91" fill="#666" font-size="12">isolated case · activation · outcome</text>
+      <text x="18" y="111" fill="#666" font-size="12">optional baseline</text>
+      <g fill="none" stroke="#111" stroke-width="1.6">
+        <rect x="320" y="65" width="48" height="16" rx="3"/>
+        <rect x="320" y="88" width="48" height="16" rx="3"/>
+        <path d="M326 73l4 4 7-8M326 96l4 4 7-8"/>
+        <line x1="343" y1="73" x2="362" y2="73"/>
+        <line x1="343" y1="96" x2="362" y2="96"/>
+      </g>
+    </g>
+    <g transform="translate(0 144)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">03  AUDIT</text>
+      <text x="18" y="66" fill="#111" font-size="13">Inspect Skill or whole library.</text>
+      <text x="18" y="91" fill="#666" font-size="12">contract · safety · behavior</text>
+      <text x="18" y="111" fill="#666" font-size="12">evidence-backed findings</text>
+      <g fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round">
+        <rect x="321" y="65" width="31" height="38" rx="3"/>
+        <line x1="327" y1="74" x2="346" y2="74"/>
+        <line x1="327" y1="82" x2="342" y2="82"/>
+        <circle cx="353" cy="92" r="10" fill="#fff"/>
+        <line x1="360" y1="99" x2="368" y2="107"/>
+      </g>
+    </g>
+    <g transform="translate(420 144)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">04  PACKAGE</text>
+      <text x="18" y="66" fill="#111" font-size="13">Build installable candidate.</text>
+      <text x="18" y="91" fill="#666" font-size="12">manifests · installer · conflicts</text>
+      <text x="18" y="111" fill="#666" font-size="12">no remote writes</text>
+      <g fill="none" stroke="#111" stroke-width="1.7" stroke-linejoin="round">
+        <path d="M321 73l23-12 23 12-23 12z"/>
+        <path d="M321 73v23l23 12 23-12V73M344 85v23"/>
+        <path d="M336 65l23 12"/>
+      </g>
+    </g>
+    <g transform="translate(0 288)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">05  PUBLISH</text>
+      <text x="18" y="66" fill="#111" font-size="13">Prepare public release.</text>
+      <text x="18" y="91" fill="#666" font-size="12">README · version · changelog</text>
+      <text x="18" y="111" fill="#666" font-size="12">confirmation-gated release</text>
+      <g fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M344 96V66M334 76l10-10 10 10"/>
+        <path d="M324 86v18h40V86"/>
+        <line x1="331" y1="95" x2="357" y2="95"/>
+      </g>
+    </g>
+    <g transform="translate(420 288)">
+      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
+      <rect width="398" height="36" rx="9" fill="#111"/>
+      <rect y="27" width="398" height="9" fill="#111"/>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">06  VISUALIZE</text>
+      <text x="18" y="66" fill="#111" font-size="13">See library health.</text>
+      <text x="18" y="91" fill="#666" font-size="12">usage · tests · lifecycle</text>
+      <text x="18" y="111" fill="#666" font-size="12">terminal-first, read-only</text>
+      <g font-size="5.5" fill="#111">
+        <text x="310" y="70">skill-1</text>
+        <text x="310" y="85">skill-2</text>
+        <text x="310" y="100">skill-3</text>
+        <rect x="345" y="64" width="30" height="6" rx="1"/>
+        <rect x="345" y="79" width="21" height="6" rx="1"/>
+        <rect x="345" y="94" width="11" height="6" rx="1"/>
+      </g>
     </g>
   </g>
-  <g transform="translate(120 690)">
-    <rect width="168" height="38" rx="19" fill="#1f2933"/>
-    <text x="22" y="25" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">scaffold</text>
-    <rect x="184" width="124" height="38" rx="19" fill="#fff3d7"/>
-    <text x="214" y="25" fill="#745018" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">lint</text>
-    <rect x="324" width="126" height="38" rx="19" fill="#ddfbf5"/>
-    <text x="355" y="25" fill="#126258" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">scan</text>
-    <rect x="466" width="148" height="38" rx="19" fill="#eef2f7"/>
-    <text x="494" y="25" fill="#3d4b59" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="15" font-weight="700">package</text>
-  </g>
+
+  <text x="70" y="690" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">CREATE → TEST → AUDIT → PACKAGE → PUBLISH → VISUALIZE</text>
+  <text x="1330" y="690" fill="#666" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">NO HOSTED SERVICE · NO TELEMETRY</text>
 </svg>

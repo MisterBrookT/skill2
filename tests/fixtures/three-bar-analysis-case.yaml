@@ -1,0 +1,40 @@
+schema_version: "1"
+skill: three-bar-analysis
+agent: codex
+defaults:
+  repetitions: 1
+cases:
+  - id: chart-from-five-values
+    name: 五值柱状图 JSON
+    kind: core_positive
+    prompt: |
+      Build a bar chart JSON from this named dataset:
+
+      - Alpha: 10
+      - Beta: 30
+      - Gamma: 20
+      - Delta: 25
+      - Epsilon: 5
+
+      Write workspace file chart.json with this schema:
+      {
+        "title": "<short title>",
+        "bars": [
+          {"label": "<name>", "value": <number>}
+        ]
+      }
+
+      Follow the installed skill. Do not invent extra fields.
+    expect_activation: three-bar-analysis
+    repetitions: 1
+    assertions:
+      - type: json_equals
+        path: chart.json
+        pointer: /bars
+        value:
+          - label: Beta
+            value: 30
+          - label: Delta
+            value: 25
+          - label: Gamma
+            value: 20

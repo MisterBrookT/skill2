@@ -7,15 +7,17 @@ from pathlib import Path
 from typing import Any
 
 from .cases import load_case_suite
+from .claude_runner import run_claude
+from .codex_runner import run_codex
 from .lint import lint_scan
 from .models import SCHEMA_VERSION, Issue, LintResult, ScanResult, Severity
 from .package import package_check, publish_preflight, scaffold_skill_repo
-from .report import render_report
+from .report import build_report, render_terminal
 from .scaffold import scaffold_skill
 from .scan import scan_path
 from .suggest import build_suggestions
 from .tester import run_test_suite, write_junit
-from .usage import parse_codex_usage
+from .usage import parse_usage
 
 _SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 _SARIF_LEVEL = {
@@ -100,6 +102,7 @@ def _cmd_test(args: argparse.Namespace) -> int:
             resume=Path(args.resume) if args.resume else None,
             max_failure_rate=args.max_failure_rate,
             min_trials_before_stop=args.min_trials_before_stop,
+            runner=run_codex if args.agent == "codex" else run_claude,
         )
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"skill2 test: {exc}", file=sys.stderr)
@@ -131,14 +134,28 @@ def _cmd_package_check(args: argparse.Namespace) -> int:
     return 1 if result.has_errors else 0
 
 
+def _usage_from_args(args: argparse.Namespace):
+    return parse_usage(
+        Path(args.skills),
+        codex_root=_optional_root(args.codex),
+        claude_root=_optional_root(getattr(args, "claude", None)),
+    )
+
+
+def _optional_root(value: str | None) -> Path | None:
+    if value is None or value == "" or value == "-":
+        return None
+    return Path(value)
+
+
 def _cmd_usage(args: argparse.Namespace) -> int:
-    result = parse_codex_usage(Path(args.codex), Path(args.skills))
+    result = _usage_from_args(args)
     if args.json:
         _print_json(result.to_dict())
     else:
         for event in result.events:
             print(
-                f"{event.timestamp}\t{event.skill}\t{event.category}\t"
+                f"{event.timestamp}\t{event.harness}\t{event.skill}\t{event.category}\t"
                 f"{event.confidence}\t{event.session}"
             )
         print(f"events={result.summary['total_events']}")
@@ -148,7 +165,7 @@ def _cmd_usage(args: argparse.Namespace) -> int:
 def _cmd_suggest(args: argparse.Namespace) -> int:
     try:
         scan = scan_path(Path(args.skills))
-        usage = parse_codex_usage(Path(args.codex), Path(args.skills))
+        usage = _usage_from_args(args)
         test_runs = _load_test_runs(Path(args.tests))
         result = build_suggestions(scan, usage, test_runs)
     except (OSError, ValueError) as exc:
@@ -166,14 +183,18 @@ def _cmd_suggest(args: argparse.Namespace) -> int:
 def _cmd_visualize(args: argparse.Namespace) -> int:
     try:
         scan = scan_path(Path(args.skills))
-        usage = parse_codex_usage(Path(args.codex), Path(args.skills))
+        usage = _usage_from_args(args)
         test_runs = _load_test_runs(Path(args.tests))
-        suggestions = build_suggestions(scan, usage, test_runs)
-        output = render_report(scan, usage, suggestions, test_runs, Path(args.out))
+        report = build_report(scan, usage, test_runs)
+        suggestions = build_suggestions(scan, usage, test_runs).to_dict()["suggestions"]
+        report["suggestions"] = suggestions
     except (OSError, ValueError) as exc:
         print(f"skill2 visualize: {exc}", file=sys.stderr)
         return 2
-    print(output)
+    if args.json:
+        _print_json(report)
+    else:
+        print(render_terminal(report, suggestions))
     return 0
 
 
@@ -287,7 +308,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     test = sub.add_parser("test", help="run isolated skill cases")
     test.add_argument("skill", help="target skill directory")
-    test.add_argument("--agent", choices=["codex"], default="codex")
+    test.add_argument("--agent", choices=["codex", "claude"], default="codex")
     test.add_argument("--cases", required=True, help="case YAML file")
     test.add_argument("--isolate", action="store_true", default=True)
     test.add_argument("--pack", action="store_true", help="install sibling skills too")
@@ -312,24 +333,27 @@ def build_parser() -> argparse.ArgumentParser:
     _add_output_args(publish, default_path=".")
     publish.set_defaults(func=_cmd_package_check, publish=True)
 
-    usage = sub.add_parser("usage", help="parse local Codex skill usage evidence")
-    usage.add_argument("--codex", default="~/.codex")
+    usage = sub.add_parser("usage", help="parse local Codex/Claude skill usage evidence")
+    usage.add_argument("--codex", default="~/.codex", help="Codex root; '-' to skip")
+    usage.add_argument("--claude", default="~/.claude", help="Claude root; '-' to skip")
     usage.add_argument("--skills", default="skills")
     usage.add_argument("--json", action="store_true")
     usage.set_defaults(func=_cmd_usage)
 
     suggest = sub.add_parser("suggest", help="derive read-only skill maintenance suggestions")
-    suggest.add_argument("--codex", default="~/.codex")
+    suggest.add_argument("--codex", default="~/.codex", help="Codex root; '-' to skip")
+    suggest.add_argument("--claude", default="~/.claude", help="Claude root; '-' to skip")
     suggest.add_argument("--skills", default="skills")
     suggest.add_argument("--tests", default=".skill2/test-runs")
     suggest.add_argument("--json", action="store_true")
     suggest.set_defaults(func=_cmd_suggest)
 
-    visualize = sub.add_parser("visualize", help="render a local skill library report")
-    visualize.add_argument("--codex", default="~/.codex")
+    visualize = sub.add_parser("visualize", help="show skill library evidence in the terminal")
+    visualize.add_argument("--codex", default="~/.codex", help="Codex root; '-' to skip")
+    visualize.add_argument("--claude", default="~/.claude", help="Claude root; '-' to skip")
     visualize.add_argument("--skills", default="skills")
     visualize.add_argument("--tests", default=".skill2/test-runs")
-    visualize.add_argument("--out", default=".skill2/report.html")
+    visualize.add_argument("--json", action="store_true")
     visualize.set_defaults(func=_cmd_visualize)
 
     return parser

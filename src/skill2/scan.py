@@ -194,7 +194,11 @@ def _scope(skill_file: Path, frontmatter: dict[str, Any] | None) -> str:
     if explicit:
         return explicit
     home = Path.home().resolve()
-    global_roots = (home / ".agents" / "skills", home / ".codex" / "skills")
+    global_roots = (
+        home / ".agents" / "skills",
+        home / ".codex" / "skills",
+        home / ".claude" / "skills",
+    )
     if any(_is_relative_to(skill_file, root) for root in global_roots):
         return "global"
     return "project"

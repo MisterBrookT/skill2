@@ -16,7 +16,7 @@ def scaffold_skill(name: str, output_dir: Path, description: str | None = None) 
         raise SystemExit(f"skill already exists: {skill_file}")
 
     skill_dir.mkdir(parents=True, exist_ok=False)
-    text = _skill_template(name, description or f"Use when the user asks for {name}.")
+    text = _skill_template(name, description or f"Use when the user needs {name}.")
     skill_file.write_text(text, encoding="utf-8")
     return [str(skill_file)]
 
@@ -29,17 +29,23 @@ description: "{description}"
 
 # {name}
 
-目标：补一句这个 skill 让 agent 学会什么。
+原则：在触发场景下用最短规则做对判断；不写通用流水账。
 
-## 流程
+## Scope
 
-1. 明确输入。
-2. 执行核心步骤。
-3. 校验输出。
+- 只覆盖本 skill 的独立触发；相邻职责另开 skill 或放 reference。
+- 重细节进 `references/`；确定性动作进 `scripts/` / validator。
+
+## 决策
+
+| 情况 | 动作 |
+| --- | --- |
+| 缺关键事实 | 先问再写 |
+| 可脚本化 | 写 script/validator，不写长 checklist |
+| 一次性回答 | 不做 skill |
 
 ## 质量门
 
-- 不猜缺失信息。
-- 不写无关解释。
-- 需要确定性执行时用 `scripts/`。
+- `description` 只写触发，不写流程。
+- 正文短；无 secrets；无无关绝对路径。
 """

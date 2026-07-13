@@ -1,52 +1,45 @@
 ---
 name: skill2-publish
-description: "用户要公开发布 skill repo、改 OSS README、创建 release，或验证公开安装时使用。"
+description: "Use when publishing a skill repository, README, release, registry entry, or public install verification."
 ---
 
-# Skill2 Publish
+# Publish Skill Repositories
 
-目标：让陌生用户能发现、理解、安装、验证一个 skill repo。
+Make a verified package discoverable, understandable, and installable by strangers.
 
-## 边界
+## Ownership
 
-- Package 先生成已验证候选物。
-- Publish 写公开界面并执行发布。
-- 未通过 `skill2 package-check`，不发布。
+- Publish owns public presentation, release metadata, remote actions, and public reinstall verification.
+- Package owns candidate construction and local installability.
+- Do not rebuild package internals during release work; return blockers to Package.
 
-## README
+## Public Surface
 
-顺序：
-
-1. 居中 icon + repo 名。
-2. 一句定位；一句具体价值。
-3. 语言切换、少量 badges、真实 hero。
-4. 单一主安装命令。
-5. 4-7 项能力表。
-6. 隐私、兼容性、限制。
-7. 文档、license。
-
-`README.md` 英文主版；`README.zh.md` 中文版。安装命令一致。只写已交付能力。
+- State product identity and concrete value before implementation detail.
+- Show one primary installation path.
+- List only shipped capabilities and supported environments.
+- State privacy, compatibility, and known limits.
+- Keep translated README installation commands equivalent.
+- Keep README, manifests, installer, changelog, and release version consistent.
 
 ## Preflight
 
-- `skill2 lint skills`
-- `skill2 package-check . --json`
-- 测试、CI、working tree、版本、changelog 全部清楚。
-- 列出 artifact、checksum、目标 registry/marketplace、远端动作。
-- 全新临时环境安装通过。
+Require clean package check, tests, CI state, working tree, version, changelog, artifacts, checksums, destinations, and public install plan.
 
-## 发布门
+## Remote Gate
 
-tag、push、GitHub Release、PyPI、registry/marketplace 都是远端写操作。
+Tag, push, release, registry, and marketplace actions require:
 
-执行前：
+1. Exact dry-run.
+2. Explicit user confirmation.
+3. One controlled execution.
+4. Honest failure reporting.
+5. Reinstall from public source and verify installed version.
 
-1. 输出 dry-run。
-2. 获取用户显式确认。
-3. 执行一次；失败不伪装成功。
-4. 从公开 URL 重新安装。
-5. 检查 README、manifest、installer、release 版本一致。
+## Output
 
-## Skill2 Dogfood
+Return preflight result, planned remote writes, approval state, published URLs, and public reinstall evidence.
 
-发布 Skill2 时，用本 Skill 检查 Skill2 自己。七个子 Skill 隔离测试、整包路由测试、公开安装测试必须通过。
+```bash
+skill2 publish-check . --json
+```

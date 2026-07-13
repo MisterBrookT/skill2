@@ -32,17 +32,33 @@ class Skill2CliTest(unittest.TestCase):
                 "-o",
                 str(root / "skills"),
                 "--description",
-                "测试 demo skill",
+                "Use when the user asks to demo a skill trigger.",
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             skill = root / "skills" / "demo-skill" / "SKILL.md"
             self.assertTrue(skill.exists())
+            body = skill.read_text(encoding="utf-8")
+            self.assertIn("Use when the user asks to demo a skill trigger.", body)
+            self.assertIn("## 决策", body)
+            self.assertIn("原则", body)
+            self.assertNotIn("## 流程", body)
+            self.assertNotRegex(body, r"(?m)^1\.\s")
 
             lint = run_cli("lint", str(root / "skills"), "--json")
             self.assertEqual(lint.returncode, 0, lint.stderr)
             payload = json.loads(lint.stdout)
             self.assertEqual(payload["checked"], 1)
             self.assertEqual(payload["issues"], [])
+
+    def test_scaffold_default_description_is_trigger_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            result = run_cli("scaffold", "skill", "demo-skill", "-o", str(root / "skills"))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            body = (root / "skills" / "demo-skill" / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn('description: "Use when the user needs demo-skill."', body)
+            self.assertNotIn("## 流程", body)
+            self.assertNotRegex(body, r"(?m)^1\.\s")
 
     def test_lint_reports_name_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -123,7 +139,7 @@ Run script when deterministic work is needed.
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], "1")
-        self.assertEqual(len(payload["skills"]), 7)
+        self.assertEqual(len(payload["skills"]), 6)
         publish = next(skill for skill in payload["skills"] if skill["name"] == "skill2-publish")
         self.assertEqual(publish["scope"], "project")
         self.assertEqual(len(publish["hash"]), 64)
@@ -174,13 +190,11 @@ Read [guide](references/guide.md#top) before doing deterministic work.
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(json.loads(result.stdout)["issues"], [])
 
-    def test_visualize_renders_local_report(self) -> None:
+    def test_visualize_renders_terminal_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             codex = root / ".codex"
             codex.mkdir()
-            output = root / "report.html"
-
             result = run_cli(
                 "visualize",
                 "--codex",
@@ -189,15 +203,25 @@ Read [guide](references/guide.md#top) before doing deterministic work.
                 "skills",
                 "--tests",
                 str(root / "missing-tests"),
-                "--out",
-                str(output),
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertTrue(output.is_file())
-            html = output.read_text(encoding="utf-8")
-            self.assertIn("Skill2 Report", html)
-            self.assertIn("Zero direct calls", html)
+            self.assertIn("Skill Library", result.stdout)
+            self.assertIn("zero-direct", result.stdout)
+            self.assertIn("Delete candidates", result.stdout)
+            self.assertIn("Downgrade candidates", result.stdout)
+            self.assertNotIn("lifecycle", result.stdout.lower())
+
+    def test_visualize_emits_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            codex = Path(tmp) / ".codex"
+            codex.mkdir()
+            result = run_cli("visualize", "--codex", str(codex), "--json")
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["schema_version"], "1")
+            self.assertIn("skills", payload)
 
     def test_suggest_emits_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

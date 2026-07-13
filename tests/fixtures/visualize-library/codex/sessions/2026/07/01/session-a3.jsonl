@@ -1,0 +1,2 @@
+{"timestamp":"2026-07-01T12:00:00Z","type":"session_meta","payload":{"id":"viz-a3","originator":"Codex Desktop","source":"cli","thread_source":"user"}}
+{"timestamp":"2026-07-01T12:00:01Z","item":{"type":"command_execution","command":"cat skills/release-notes-drafter/SKILL.md"}}

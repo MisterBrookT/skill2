@@ -21,10 +21,25 @@ class PackageTest(unittest.TestCase):
     def test_scaffold_creates_lint_clean_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
+            self.assertTrue((root / ".claude-plugin" / "plugin.json").is_file())
+            marketplace = json.loads(
+                (root / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(marketplace["plugins"][0]["source"], "./")
             result = package_check(root)
             self.assertFalse(result.has_errors, result.to_dict())
             self.assertEqual(result.schema_version, "1")
             self.assertEqual(result.to_dict()["issues"], [])
+
+    def test_package_check_rejects_mismatched_claude_marketplace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp))
+            path = root / ".claude-plugin" / "marketplace.json"
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["plugins"][0]["version"] = "0.2.0"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            rules = {issue.rule_id for issue in package_check(root).issues}
+            self.assertIn("P2M005", rules)
 
     def test_package_check_reports_bash_manifest_and_content_risks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

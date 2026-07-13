@@ -1,4 +1,0 @@
-interface:
-  display_name: "Skill2 Publish"
-  short_description: "Publish and verify a skill repository"
-  default_prompt: "Use $skill2-publish to prepare and verify this skill repository release."

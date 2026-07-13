@@ -1,0 +1,63 @@
+schema_version: "1"
+skill: skill2-create
+agent: codex
+defaults:
+  repetitions: 1
+cases:
+  - id: create-core
+    name: create reusable skill
+    kind: core_positive
+    prompt: "Create a reusable agent skill named maintain-api-docs for maintaining API documentation. Write the minimal files under skills/maintain-api-docs. Decide scope and add resources only when needed. Do not run behavior trials or claim acceptance."
+    expect_activation: skill2-create
+    assertions:
+      - type: file_exists
+        path: "skills/maintain-api-docs/SKILL.md"
+      - type: file_contains
+        path: "skills/maintain-api-docs/SKILL.md"
+        value: "name: maintain-api-docs"
+      - type: file_contains
+        path: "skills/maintain-api-docs/SKILL.md"
+        value: "description:"
+      - type: not_contains
+        value: "deterministic_uplift"
+  - id: create-reference
+    name: move depth into reference
+    kind: paraphrase_positive
+    prompt: "This existing skill has a 300-line API detail table under the same trigger. Restructure it without creating unnecessary top-level skills."
+    expect_activation: skill2-create
+    assertions:
+      - type: contains_any
+        values: ["reference", "references/"]
+  - id: create-project
+    name: project-local scope
+    kind: paraphrase_positive
+    prompt: "Create instructions for paths and internal lint commands used only in this repository. Decide the correct skill scope and structure."
+    expect_activation: skill2-create
+    assertions:
+      - type: contains_any
+        values: ["project-local", "project local", "project-level", "project level", "current repo", "project scope"]
+  - id: create-no-skill
+    name: reject unnecessary skill
+    kind: paraphrase_positive
+    prompt: "A teammate wants a new skill for one file-naming rule enforceable by regex. Decide whether to create it and give the smallest better alternative."
+    expect_activation: skill2-create
+    assertions:
+      - type: contains_groups
+        groups:
+          - ["no skill", "not a skill", "do not create", "don't create", "unnecessary", "no need"]
+          - ["validator", "lint", "CI", "pre-commit", "script"]
+  - id: create-adjacent-test
+    name: behavior test adjacent negative
+    kind: adjacent_negative
+    prompt: "Does this existing skill improve the agent? Run an isolated evaluation with a baseline."
+    expect_not_activation: [skill2-create]
+  - id: create-adjacent-package
+    name: package adjacent negative
+    kind: adjacent_negative
+    prompt: "Check whether this skill repository is installable and build the release artifact."
+    expect_not_activation: [skill2-create]
+  - id: create-unrelated
+    name: unrelated negative
+    kind: unrelated_negative
+    prompt: "Explain Python context managers."
+    expect_not_activation: [skill2-create]

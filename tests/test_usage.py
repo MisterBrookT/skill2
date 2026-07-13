@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from skill2.usage import parse_codex_usage
+from skill2.usage import parse_claude_usage, parse_codex_usage, parse_usage
 
 FIXTURES = Path(__file__).parent / "fixtures" / "usage"
 
@@ -100,7 +100,10 @@ class UsageTest(unittest.TestCase):
             result = parse_codex_usage(codex, skills)
 
             self.assertEqual(result.events, ())
-            self.assertEqual(result.summary, {"total_events": 0, "by_category": {}, "by_skill": {}})
+            self.assertEqual(
+                result.summary,
+                {"total_events": 0, "by_category": {}, "by_skill": {}, "by_harness": {}},
+            )
 
     def test_matches_installed_skill_alias_without_leaking_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -128,6 +131,174 @@ class UsageTest(unittest.TestCase):
 
             self.assertEqual(payload["events"][0]["skill"], "alpha")
             self.assertNotIn(str(Path.home()), json.dumps(payload))
+
+    def test_parses_portable_relative_skill_md_reads(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skills = _make_skills(root / "skills")
+            session = root / "codex" / "sessions" / "relative.jsonl"
+            session.parent.mkdir(parents=True)
+            records = [
+                {
+                    "timestamp": "2026-07-06T00:00:00Z",
+                    "type": "session_meta",
+                    "payload": {"id": "relative-1", "thread_source": "user"},
+                },
+                {
+                    "timestamp": "2026-07-06T00:00:01Z",
+                    "item": {
+                        "type": "command_execution",
+                        "command": "cat skills/alpha/SKILL.md",
+                    },
+                },
+                {
+                    "timestamp": "2026-07-06T00:00:02Z",
+                    "item": {
+                        "type": "command_execution",
+                        "command": "sed -n '1,40p' skills/beta/SKILL.md",
+                    },
+                },
+            ]
+            session.write_text(
+                "\n".join(json.dumps(record) for record in records), encoding="utf-8"
+            )
+
+            payload = parse_codex_usage(root / "codex", skills).to_dict()
+            events = payload["events"]
+
+            self.assertEqual(
+                [(event["skill"], event["category"]) for event in events],
+                [("alpha", "activation"), ("beta", "activation")],
+            )
+            dumped = json.dumps(payload)
+            self.assertNotIn(str(skills.resolve()), dumped)
+            self.assertNotIn(str(Path.home()), dumped)
+            self.assertNotIn("confidential", dumped)
+
+    def test_parses_claude_read_and_sidechain_as_worker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skills = _make_skills(root / "skills")
+            session = (
+                root
+                / "claude"
+                / "projects"
+                / "-Users-demo"
+                / "claude-session.jsonl"
+            )
+            session.parent.mkdir(parents=True)
+            alpha = skills.resolve() / "alpha" / "SKILL.md"
+            beta = skills.resolve() / "beta" / "SKILL.md"
+            records = [
+                {
+                    "type": "assistant",
+                    "timestamp": "2026-07-10T00:00:01Z",
+                    "sessionId": "claude-1",
+                    "isSidechain": False,
+                    "message": {
+                        "content": [
+                            {
+                                "type": "tool_use",
+                                "name": "Read",
+                                "input": {"file_path": str(alpha)},
+                            }
+                        ]
+                    },
+                },
+                {
+                    "type": "assistant",
+                    "timestamp": "2026-07-10T00:00:02Z",
+                    "sessionId": "claude-1",
+                    "isSidechain": True,
+                    "message": {
+                        "content": [
+                            {
+                                "type": "tool_use",
+                                "name": "Bash",
+                                "input": {"command": f"cat {beta}"},
+                            }
+                        ]
+                    },
+                },
+            ]
+            session.write_text(
+                "\n".join(json.dumps(record) for record in records), encoding="utf-8"
+            )
+
+            payload = parse_claude_usage(root / "claude", skills).to_dict()
+            events = payload["events"]
+
+            self.assertEqual(
+                [(event["skill"], event["category"], event["harness"]) for event in events],
+                [
+                    ("alpha", "activation", "claude"),
+                    ("beta", "worker_read", "claude"),
+                ],
+            )
+            self.assertEqual(payload["summary"]["by_harness"], {"claude": 2})
+            self.assertNotIn(str(Path.home()), json.dumps(payload))
+
+    def test_merge_codex_and_claude_usage(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skills = _make_skills(root / "skills")
+            codex_session = root / "codex" / "sessions" / "c.jsonl"
+            claude_session = (
+                root / "claude" / "projects" / "p" / "c.jsonl"
+            )
+            codex_session.parent.mkdir(parents=True)
+            claude_session.parent.mkdir(parents=True)
+            alpha = skills.resolve() / "alpha" / "SKILL.md"
+            codex_session.write_text(
+                "\n".join(
+                    json.dumps(record)
+                    for record in (
+                        {
+                            "timestamp": "2026-07-11T00:00:00Z",
+                            "type": "session_meta",
+                            "payload": {"id": "codex-1"},
+                        },
+                        {
+                            "timestamp": "2026-07-11T00:00:01Z",
+                            "item": {
+                                "type": "command_execution",
+                                "command": f"cat {alpha}",
+                            },
+                        },
+                    )
+                ),
+                encoding="utf-8",
+            )
+            claude_session.write_text(
+                json.dumps(
+                    {
+                        "type": "assistant",
+                        "timestamp": "2026-07-11T00:00:02Z",
+                        "sessionId": "claude-2",
+                        "isSidechain": False,
+                        "message": {
+                            "content": [
+                                {
+                                    "type": "tool_use",
+                                    "name": "Read",
+                                    "input": {"file_path": str(alpha)},
+                                }
+                            ]
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload = parse_usage(
+                skills,
+                codex_root=root / "codex",
+                claude_root=root / "claude",
+            ).to_dict()
+
+            self.assertEqual(payload["summary"]["total_events"], 2)
+            self.assertEqual(payload["summary"]["by_harness"], {"claude": 1, "codex": 1})
+            self.assertEqual({event["skill"] for event in payload["events"]}, {"alpha"})
 
 
 def _make_skills(root: Path) -> Path:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import signal
 import subprocess
@@ -13,6 +14,9 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+
+_SAFE_SYSTEM_PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+_PACKAGE_ROOT = Path(__file__).resolve().parent
 
 
 @dataclass(frozen=True)
@@ -27,6 +31,21 @@ class ExecutionResult:
     workspace: str
     changed_files: tuple[str, ...]
     error: str | None = None
+
+
+@dataclass(frozen=True)
+class TrialSkill2Cli:
+    bin_dir: Path
+    wrapper: Path
+    tool_source: Path
+
+    def isolation_fields(self) -> dict[str, Any]:
+        return {
+            "skill2_cli_available": True,
+            "skill2_cli_bin": str(self.wrapper),
+            "skill2_tool_source": str(self.tool_source),
+            "path_excludes_user_local_bin": True,
+        }
 
 
 def run_codex(
@@ -48,6 +67,7 @@ def run_codex(
         codex_home.mkdir()
         isolated_home.mkdir()
         workspace.mkdir()
+        skill2_cli = _install_trial_skill2_cli(temp)
         _copy_auth(codex_home)
         installed = _install_skills(skill_dirs, codex_home / "skills")
         if fixture:
@@ -57,11 +77,9 @@ def run_codex(
         events_path = artifact_dir / "events.jsonl"
         stderr_path = artifact_dir / "stderr.log"
         last_path = temp / "last-message.txt"
-        codex_executable = shutil.which("codex")
-        if not codex_executable:
-            raise RuntimeError("codex executable not found")
+        codex_executable = _codex_executable()
         command = [
-            str(Path(codex_executable).resolve()),
+            str(codex_executable),
             "exec",
             "--ephemeral",
             "--ignore-user-config",
@@ -79,10 +97,12 @@ def run_codex(
             command.extend(["--model", model])
         command.append(prompt)
         env = os.environ.copy()
+        env.pop("SKILL2_CODEX_BIN", None)
+        env.pop("SKILL2_CLAUDE_BIN", None)
         env["HOME"] = str(isolated_home)
         env["CODEX_HOME"] = str(codex_home)
-        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-        command, host_guard = _guard_host_home(command, Path.home(), Path(codex_executable))
+        env["PATH"] = _safe_path(skill2_cli.bin_dir)
+        command, host_guard = _guard_host_home(command, Path.home(), codex_executable)
         sandbox_mode = "workspace-write"
         if host_guard == "macos-seatbelt":
             sandbox_index = command.index("--sandbox")
@@ -132,6 +152,7 @@ def run_codex(
                 "sanitized_path": True,
                 "host_home_guard": host_guard,
                 "system_prompt_control": "harness-managed",
+                **skill2_cli.isolation_fields(),
             },
         }
         (artifact_dir / "manifest.json").write_text(
@@ -213,18 +234,72 @@ def _copy_auth(codex_home: Path) -> None:
         shutil.copy2(installation_id, codex_home / "installation_id")
 
 
+def _codex_executable() -> Path:
+    configured = os.environ.get("SKILL2_CODEX_BIN")
+    candidate = Path(configured).expanduser() if configured else shutil.which("codex")
+    if not candidate:
+        raise RuntimeError("codex executable not found")
+    executable = Path(candidate).resolve()
+    if not executable.is_file() or not os.access(executable, os.X_OK):
+        raise RuntimeError(f"codex executable is not runnable: {executable}")
+    return executable
+
+
+def _install_trial_skill2_cli(temp: Path) -> TrialSkill2Cli:
+    tool_source = temp / "tool-src"
+    package_dest = tool_source / "skill2"
+    tool_source.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(
+        _PACKAGE_ROOT,
+        package_dest,
+        ignore=shutil.ignore_patterns("__pycache__", "*.py[co]", "*.so"),
+    )
+    bin_dir = temp / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    wrapper = bin_dir / "skill2"
+    wrapper.write_text(
+        "#!/bin/sh\n"
+        f"export PYTHONPATH={shlex.quote(str(tool_source))}\n"
+        f"exec {shlex.quote(sys.executable)} -m skill2.cli \"$@\"\n",
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o755)
+    return TrialSkill2Cli(bin_dir=bin_dir, wrapper=wrapper, tool_source=tool_source)
+
+
+def _safe_path(bin_dir: Path) -> str:
+    return f"{bin_dir}{os.pathsep}{_SAFE_SYSTEM_PATH}"
+
+
+def _python_runtime_read_roots(agent_executable: Path) -> tuple[Path, ...]:
+    roots: list[Path] = []
+    for candidate in (
+        agent_executable.resolve().parent,
+        Path(sys.executable).resolve().parent,
+        Path(sys.prefix).resolve(),
+        Path(sys.base_prefix).resolve(),
+    ):
+        resolved = candidate.resolve()
+        if resolved not in roots:
+            roots.append(resolved)
+    return tuple(roots)
+
+
 def _guard_host_home(
-    command: list[str], host_home: Path, codex_executable: Path
+    command: list[str], host_home: Path, agent_executable: Path
 ) -> tuple[list[str], str]:
     sandbox = shutil.which("sandbox-exec")
     if sys.platform == "darwin" and sandbox:
         home = _seatbelt_string(str(host_home.resolve()))
-        executable_root = _seatbelt_string(str(codex_executable.resolve().parent))
+        allows = "".join(
+            f'(allow file-read* (subpath "{_seatbelt_string(str(root))}"))'
+            for root in _python_runtime_read_roots(agent_executable)
+        )
         profile = (
             "(version 1)"
             "(allow default)"
             f'(deny file-read* file-write* (subpath "{home}"))'
-            f'(allow file-read* (subpath "{executable_root}"))'
+            f"{allows}"
         )
         return [sandbox, "-p", profile, *command], "macos-seatbelt"
     if os.environ.get("SKILL2_ALLOW_UNGUARDED") == "1":

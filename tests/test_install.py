@@ -85,7 +85,10 @@ class InstallScriptTest(unittest.TestCase):
             self.assertEqual(list(destination.glob(".skill2-staging.*")), [])
             self.assertEqual(
                 (home / "uv.log").read_text(encoding="utf-8").splitlines(),
-                [f"tool install --force {ROOT}", f"tool install --force {ROOT}"],
+                [
+                    f"tool install --force --reinstall --refresh {ROOT}",
+                    f"tool install --force --reinstall --refresh {ROOT}",
+                ],
             )
 
     def test_rejects_multiple_targets(self) -> None:
@@ -129,6 +132,30 @@ class InstallScriptTest(unittest.TestCase):
             self.assertEqual(forced.returncode, 0, forced.stderr)
             self.assertNotEqual(installed.read_text(encoding="utf-8"), "local change\n")
 
+    def test_retired_skills_require_force_then_are_removed(self) -> None:
+        for retired_name in ("skill2-build", "skill2-prune"):
+            with self.subTest(retired=retired_name):
+                with tempfile.TemporaryDirectory() as tmp:
+                    home = Path(tmp)
+                    env = fake_uv_env(home)
+                    destination = home / ".agents" / "skills"
+                    retired = destination / retired_name
+                    retired.mkdir(parents=True)
+                    (retired / "SKILL.md").write_text("legacy\n", encoding="utf-8")
+
+                    blocked = run_install(home, "codex", env=env)
+                    self.assertEqual(blocked.returncode, 1)
+                    self.assertIn(f"{retired_name}: retired", blocked.stdout)
+                    self.assertTrue(retired.exists())
+
+                    forced = run_install(home, "codex", "--force", env=env)
+                    self.assertEqual(forced.returncode, 0, forced.stderr)
+                    self.assertFalse(retired.exists())
+                    self.assertTrue((destination / "skill2-create" / "SKILL.md").is_file())
+                    self.assertTrue(
+                        (destination / "skill2-visualize" / "SKILL.md").is_file()
+                    )
+
     def test_all_installs_both_targets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
@@ -141,6 +168,31 @@ class InstallScriptTest(unittest.TestCase):
                     path.name for path in destination.glob("skill2-*") if path.is_dir()
                 )
                 self.assertEqual(installed, source_skills())
+
+    def test_claude_installs_is_idempotent_and_requires_force_for_conflicts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            env = fake_uv_env(home)
+            first = run_install(home, "claude", env=env)
+            self.assertEqual(first.returncode, 0, first.stderr)
+            destination = home / ".claude" / "skills"
+            self.assertTrue((destination / ".skill2-install-provenance").is_file())
+            self.assertEqual(
+                sorted(path.name for path in destination.glob("skill2-*") if path.is_dir()),
+                source_skills(),
+            )
+
+            second = run_install(home, "claude", env=env)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            skill = source_skills()[0]
+            installed = destination / skill / "SKILL.md"
+            installed.write_text("local change\n", encoding="utf-8")
+            blocked = run_install(home, "claude", env=env)
+            self.assertEqual(blocked.returncode, 1)
+            self.assertEqual(installed.read_text(encoding="utf-8"), "local change\n")
+            forced = run_install(home, "claude", "--force", env=env)
+            self.assertEqual(forced.returncode, 0, forced.stderr)
+            self.assertNotEqual(installed.read_text(encoding="utf-8"), "local change\n")
 
     def test_pipe_execution_clones_when_script_has_no_local_root(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -195,7 +247,9 @@ class InstallScriptTest(unittest.TestCase):
             env = fake_uv_env(home)
             result = run_install(home, "claude", "--dry-run", env=env)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn(f"cli: uv tool install --force {ROOT}", result.stdout)
+            self.assertIn(
+                f"cli: uv tool install --force --reinstall --refresh {ROOT}", result.stdout
+            )
             self.assertFalse((home / "uv.log").exists())
             self.assertFalse((home / ".claude").exists())
 

@@ -269,8 +269,10 @@ def evaluate_assertions(
             detail = value
         elif assertion_type == "regex":
             value = str(assertion.get("value") or "")
-            passed = re.search(value, execution.final_message, re.S) is not None
-            detail = value
+            passed, detail = _search_regex(value, execution.final_message, invert=False)
+        elif assertion_type == "not_regex":
+            value = str(assertion.get("value") or "")
+            passed, detail = _search_regex(value, execution.final_message, invert=True)
         elif assertion_type == "file_exists":
             value = str(assertion.get("path") or "")
             passed = (workspace / value).is_file()
@@ -295,6 +297,17 @@ def evaluate_assertions(
         elif assertion_type == "no_file_changes":
             passed = not execution.changed_files
             detail = ", ".join(execution.changed_files)
+        elif assertion_type == "json_equals":
+            passed, detail = _assert_json_equals(
+                workspace,
+                path=str(assertion.get("path") or ""),
+                pointer=str(assertion.get("pointer") or ""),
+                expected=assertion.get("value"),
+            )
+        elif assertion_type == "max_lines":
+            passed, detail = _assert_max_lines(
+                execution.final_message, assertion.get("value")
+            )
         else:
             detail = f"unknown assertion type: {assertion_type}"
         results.append(
@@ -305,6 +318,92 @@ def evaluate_assertions(
             }
         )
     return tuple(results)
+
+
+def _assert_max_lines(final_message: str, raw_value: Any) -> tuple[bool, str]:
+    limit = _positive_int(raw_value)
+    if limit is None:
+        return False, f"invalid max_lines value: {raw_value!r}"
+    non_empty = sum(1 for line in final_message.splitlines() if line.strip())
+    return non_empty <= limit, f"{non_empty} <= {limit}"
+
+
+def _positive_int(value: Any) -> int | None:
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int):
+        return value if value > 0 else None
+    if isinstance(value, str):
+        text = value.strip()
+        if text.isdigit():
+            number = int(text)
+            return number if number > 0 else None
+        return None
+    return None
+
+
+def _search_regex(pattern: str, text: str, *, invert: bool) -> tuple[bool, str]:
+    try:
+        matched = re.search(pattern, text, re.S) is not None
+    except re.error as exc:
+        return False, f"invalid regex: {pattern} ({exc})"
+    if invert:
+        return not matched, pattern
+    return matched, pattern
+
+
+def _assert_json_equals(
+    workspace: Path, *, path: str, pointer: str, expected: Any
+) -> tuple[bool, str]:
+    if not path:
+        return False, "json_equals missing path"
+    workspace_root = workspace.resolve()
+    target = (workspace_root / path).resolve()
+    try:
+        target.relative_to(workspace_root)
+    except ValueError:
+        return False, f"json_equals path escapes workspace: {path}"
+    if not target.is_file():
+        return False, f"missing file: {path}"
+    try:
+        text = target.read_text(encoding="utf-8")
+        document = json.loads(text)
+    except UnicodeDecodeError as exc:
+        return False, f"invalid json encoding {path}: {exc}"
+    except json.JSONDecodeError as exc:
+        return False, f"invalid json {path}: {exc}"
+    try:
+        actual = _resolve_json_pointer(document, pointer)
+    except ValueError as exc:
+        return False, str(exc)
+    if actual == expected:
+        return True, f"{path}{pointer}"
+    return False, f"{path}{pointer}: expected {expected!r}, got {actual!r}"
+
+
+def _resolve_json_pointer(document: Any, pointer: str) -> Any:
+    if pointer in {"", "#"}:
+        return document
+    if not pointer.startswith("/"):
+        raise ValueError(f"invalid pointer (must start with /): {pointer}")
+    current: Any = document
+    for raw_token in pointer.split("/")[1:]:
+        token = raw_token.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, dict):
+            if token not in current:
+                raise ValueError(f"pointer missing key {token!r} at {pointer}")
+            current = current[token]
+            continue
+        if isinstance(current, list):
+            if not token.isdigit():
+                raise ValueError(f"pointer non-index {token!r} on list at {pointer}")
+            index = int(token)
+            if index >= len(current):
+                raise ValueError(f"pointer index {index} out of range at {pointer}")
+            current = current[index]
+            continue
+        raise ValueError(f"pointer cannot descend into {type(current).__name__} at {pointer}")
+    return current
 
 
 def _judge(

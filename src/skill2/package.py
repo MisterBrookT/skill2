@@ -89,6 +89,7 @@ def package_check(path: Path) -> PackageResult:
     issues.extend(_bash_issues(root))
     manifest_issues, _ = _manifest_issues(root)
     issues.extend(manifest_issues)
+    issues.extend(_claude_marketplace_issues(root))
     issues.extend(_content_issues(root))
     return _result(root, issues)
 
@@ -129,6 +130,33 @@ def scaffold_skill_repo(name: str, output_dir: Path) -> list[str]:
                 "description": f"{name} skill repository.",
                 "skills": "skills",
                 "license": "MIT",
+            },
+            indent=2,
+        )
+        + "\n",
+        root / ".claude-plugin" / "plugin.json": json.dumps(
+            {
+                "name": name,
+                "version": "0.1.0",
+                "description": f"{name} skill repository.",
+                "license": "MIT",
+            },
+            indent=2,
+        )
+        + "\n",
+        root / ".claude-plugin" / "marketplace.json": json.dumps(
+            {
+                "name": f"{name}-marketplace",
+                "description": f"{name} skill marketplace.",
+                "owner": {"name": "TODO"},
+                "plugins": [
+                    {
+                        "name": name,
+                        "description": f"{name} skill repository.",
+                        "version": "0.1.0",
+                        "source": "./",
+                    }
+                ],
             },
             indent=2,
         )
@@ -224,9 +252,10 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
 
     has_skills_path = False
     for candidate, manifest in manifests:
-        require_version = (
-            candidate.name == "manifest.json" or candidate.parts[-2] == ".codex-plugin"
-        )
+        require_version = candidate.name == "manifest.json" or candidate.parts[-2] in {
+            ".codex-plugin",
+            ".claude-plugin",
+        }
         version = manifest.get("version")
         if require_version and not isinstance(version, str):
             issues.append(
@@ -277,6 +306,72 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
             Issue(Severity.ERROR, str(root), "no manifest declares a skills path", "P2M004")
         )
     return issues, manifests
+
+
+def _claude_marketplace_issues(root: Path) -> list[Issue]:
+    marketplace_path = root / ".claude-plugin" / "marketplace.json"
+    plugin_path = root / ".claude-plugin" / "plugin.json"
+    if not marketplace_path.exists():
+        return []
+    try:
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return [
+            Issue(
+                Severity.ERROR,
+                str(marketplace_path),
+                f"invalid Claude marketplace JSON: {exc}",
+                "P2M005",
+            )
+        ]
+    if not isinstance(marketplace, dict):
+        return [
+            Issue(
+                Severity.ERROR,
+                str(marketplace_path),
+                "Claude marketplace must be a JSON object",
+                "P2M005",
+            )
+        ]
+    plugins = marketplace.get("plugins")
+    if not isinstance(plugins, list) or not plugins:
+        return [
+            Issue(
+                Severity.ERROR,
+                str(marketplace_path),
+                "Claude marketplace needs a non-empty plugins list",
+                "P2M005",
+            )
+        ]
+    try:
+        plugin_manifest = json.loads(plugin_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return []
+    if not isinstance(plugin_manifest, dict):
+        return []
+    name = plugin_manifest.get("name")
+    version = plugin_manifest.get("version")
+    matches = [item for item in plugins if isinstance(item, dict) and item.get("name") == name]
+    if len(matches) != 1:
+        return [
+            Issue(
+                Severity.ERROR,
+                str(marketplace_path),
+                "Claude marketplace must contain exactly one entry for its plugin manifest",
+                "P2M005",
+            )
+        ]
+    entry = matches[0]
+    if entry.get("source") != "./" or entry.get("version") != version:
+        return [
+            Issue(
+                Severity.ERROR,
+                str(marketplace_path),
+                "Claude marketplace plugin source or version does not match plugin manifest",
+                "P2M005",
+            )
+        ]
+    return []
 
 
 def _content_issues(root: Path) -> list[Issue]:
@@ -453,7 +548,7 @@ def _english_readme(name: str) -> str:
         f'<img src="assets/{name}-icon.svg" width="72" alt="{name} icon">\n\n'
         f"# {name}\n\n"
         "A reusable agent skill repository.\n\n"
-        "## Install\n\n```bash\n./install.sh codex\n```\n"
+        "## Install\n\n```bash\n./install.sh\n```\n"
     )
 
 
@@ -462,7 +557,7 @@ def _chinese_readme(name: str) -> str:
         f'<img src="assets/{name}-icon.svg" width="72" alt="{name} 图标">\n\n'
         f"# {name}\n\n"
         "可复用的 agent skill 仓库。\n\n"
-        "## 安装\n\n```bash\n./install.sh codex\n```\n"
+        "## 安装\n\n```bash\n./install.sh\n```\n"
     )
 
 
@@ -471,13 +566,17 @@ def _installer() -> str:
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-target="${1:-codex}"
+target="${1:-all}"
 case "$target" in
-  codex) destination="$HOME/.agents/skills" ;;
-  *) printf 'usage: ./install.sh [codex]\\n' >&2; exit 2 ;;
+  all) destinations=("$HOME/.agents/skills" "$HOME/.claude/skills") ;;
+  codex) destinations=("$HOME/.agents/skills") ;;
+  claude) destinations=("$HOME/.claude/skills") ;;
+  *) printf 'usage: ./install.sh [all|codex|claude]\\n' >&2; exit 2 ;;
 esac
-mkdir -p "$destination"
-cp -R "$root/skills/." "$destination/"
+for destination in "${destinations[@]}"; do
+  mkdir -p "$destination"
+  cp -R "$root/skills/." "$destination/"
+done
 """
 
 

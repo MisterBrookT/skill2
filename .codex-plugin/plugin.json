@@ -1,7 +1,7 @@
 {
   "name": "skill2",
-  "version": "0.0.0",
-  "description": "Skills for building, testing, packaging, publishing, auditing, pruning, and visualizing skill libraries.",
+  "version": "0.1.0",
+  "description": "Skills for creating, testing, packaging, publishing, auditing, and visualizing skill libraries.",
   "repository": "https://github.com/MisterBrookT/skill2",
   "license": "MIT",
   "skills": "skills"

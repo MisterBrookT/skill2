@@ -2,11 +2,11 @@ schema_version: "1"
 skill: skill2
 agent: codex
 defaults:
-  repetitions: 3
+  repetitions: 1
 cases:
-  - id: route-build
+  - id: route-create
     prompt: "我想新建一个 agent skill。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
-    expect_activation: skill2-build
+    expect_activation: skill2-create
   - id: route-test
     prompt: "我想隔离测试一个 skill 是否会触发。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
     expect_activation: skill2-test
@@ -19,9 +19,9 @@ cases:
   - id: route-audit
     prompt: "我想审计 skill library 的断链和危险脚本，只报告。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
     expect_activation: skill2-audit
-  - id: route-prune
+  - id: route-lifecycle
     prompt: "我想根据 usage 决定哪些 skills 应合并或降级。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
-    expect_activation: skill2-prune
+    expect_activation: skill2-visualize
   - id: route-visualize
-    prompt: "我想把 skill library 的调用频率、最近调用和测试状态做成本地 HTML。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
+    prompt: "我想直接在终端看 skill library 的调用频率、最近调用和测试状态。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
     expect_activation: skill2-visualize

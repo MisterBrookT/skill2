@@ -1,0 +1,2 @@
+{"timestamp":"2026-07-01T11:00:00Z","type":"session_meta","payload":{"id":"viz-a2","originator":"Codex Desktop","source":"cli","thread_source":"user"}}
+{"timestamp":"2026-07-01T11:00:01Z","type":"response_item","payload":{"type":"function_call","name":"functions.exec","arguments":"{\"cmd\": \"sed -n '1,80p' skills/release-notes-drafter/SKILL.md\"}"}}

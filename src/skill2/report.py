@@ -1,29 +1,253 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from html import escape
-from pathlib import Path
 from typing import Any
 
-from .models import ScanResult
-from .suggest import SuggestionResult
-from .usage import UsageResult
+from .models import SCHEMA_VERSION, ScanResult
+from .usage import IndirectCategory, UsageResult
+
+_DIRECT_MARK = "█"
+_INDIRECT_MARK = "░"
+_EMPTY_MARK = "·"
+_BAR_WIDTH = 16
 
 
-def render_report(
+def build_report(
     scan: ScanResult,
     usage: UsageResult,
-    suggestions: SuggestionResult,
     test_runs: tuple[dict[str, Any], ...],
-    output: Path,
-) -> Path:
-    """Write a self-contained, read-only local HTML report."""
+) -> dict[str, Any]:
+    """Build compact, local-only evidence for terminal or JSON output."""
     events = tuple(_event(event) for event in usage.events)
-    metrics = _metrics(scan, events, test_runs)
-    output = output.expanduser()
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(_document(scan, events, metrics, suggestions, test_runs), encoding="utf-8")
-    return output
+    tests = _tests_by_skill(test_runs)
+    by_skill: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for event in events:
+        by_skill[event["skill"]].append(event)
+
+    skills: list[dict[str, Any]] = []
+    for skill in scan.skills:
+        skill_events = by_skill.get(skill.name, [])
+        direct = [event for event in skill_events if event["category"] == "activation"]
+        indirect = [
+            event for event in skill_events if event["category"] in IndirectCategory
+        ]
+        test = tests.get(skill.name, {"total": 0, "passed": 0})
+        skills.append(
+            {
+                "name": skill.name,
+                "direct_calls": len(direct),
+                "indirect_calls": len(indirect),
+                "last_direct_call": max(
+                    (event["timestamp"] for event in direct), default="never"
+                ),
+                "usage_categories": dict(
+                    sorted(Counter(event["category"] for event in skill_events).items())
+                ),
+                "tests": test,
+            }
+        )
+    skills.sort(
+        key=lambda item: (-item["direct_calls"], -item["indirect_calls"], item["name"])
+    )
+    direct_calls = sum(item["direct_calls"] for item in skills)
+    indirect_calls = sum(item["indirect_calls"] for item in skills)
+    zero_direct = sum(item["direct_calls"] == 0 for item in skills)
+    tested = sum(item["tests"]["total"] > 0 for item in skills)
+    harnesses = usage.summary.get("by_harness") if isinstance(usage.summary, dict) else {}
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "summary": {
+            "skills": len(skills),
+            "direct_calls": direct_calls,
+            "indirect_calls": indirect_calls,
+            "zero_direct": zero_direct,
+            "tested_skills": tested,
+            "by_harness": harnesses if isinstance(harnesses, dict) else {},
+        },
+        "skills": skills,
+        "limits": [
+            "Exact SKILL.md reads are usage evidence, not complete invocation history.",
+            "Zero or low usage never authorizes deletion.",
+            "Hooks and non-tool skill injection are not counted.",
+        ],
+    }
+
+
+def render_terminal(
+    report: dict[str, Any],
+    suggestions: tuple[dict[str, Any], ...] | list[dict[str, Any]] | None = None,
+) -> str:
+    summary = report["summary"]
+    skills = report["skills"]
+    harness = summary.get("by_harness") or {}
+    harness_bits = (
+        " · ".join(f"{name} {count}" for name, count in sorted(harness.items()))
+        if harness
+        else "no harness hits"
+    )
+    lines = [
+        "Skill Library",
+        (
+            f"{summary['skills']} skills · {summary['direct_calls']} direct · "
+            f"{summary.get('indirect_calls', 0)} indirect · "
+            f"{summary['zero_direct']} zero-direct · {summary['tested_skills']} tested"
+        ),
+        f"sources: {harness_bits}",
+        "",
+    ]
+    if not skills:
+        lines.append("No scanned skills.")
+    else:
+        name_width = max(5, min(32, max(len(item["name"]) for item in skills)))
+        lines.append(
+            f"{'SKILL':<{name_width}}  {'D':>4}  {'I':>4}  {'LAST':<10}  {'TEST':<7}  USAGE"
+        )
+        max_total = max(
+            (
+                item["direct_calls"] + item.get("indirect_calls", 0)
+                for item in skills
+            ),
+            default=0,
+        )
+        for item in skills:
+            tests = item["tests"]
+            test_label = (
+                f"{tests['passed']}/{tests['total']}" if tests["total"] else "missing"
+            )
+            recent = item["last_direct_call"]
+            recent = recent[:10] if recent != "never" else recent
+            direct = item["direct_calls"]
+            indirect = item.get("indirect_calls", 0)
+            lines.append(
+                f"{item['name']:<{name_width}}  {direct:>4}  {indirect:>4}  "
+                f"{recent:<10}  {test_label:<7}  {_stacked_bar(direct, indirect, max_total)}"
+            )
+        lines.extend(
+            (
+                "",
+                "Legend",
+                f"{_DIRECT_MARK} direct = activation (main-session skill read)",
+                (
+                    f"{_INDIRECT_MARK} indirect = broad_scan (≥4 skills/session) "
+                    "+ worker_read (subagent/sidechain)"
+                ),
+            )
+        )
+
+    suggestion_rows = list(suggestions or report.get("suggestions") or ())
+    if suggestion_rows:
+        lines.extend(("", *_render_suggestion_sections(suggestion_rows, skills)))
+
+    lines.extend(("", "Limits"))
+    lines.extend(f"- {item}" for item in report["limits"])
+    return "\n".join(lines)
+
+
+def _render_suggestion_sections(
+    suggestions: list[dict[str, Any]],
+    skills: list[dict[str, Any]],
+    *,
+    max_each: int = 5,
+) -> list[str]:
+    """Render plain-language delete/downgrade blocks (no abstract 'lifecycle' label)."""
+    by_name = {item["name"]: item for item in skills}
+    deletes = [item for item in suggestions if item.get("action") == "delete_candidate"]
+    downgrades = [item for item in suggestions if item.get("action") == "downgrade"]
+    merges = [item for item in suggestions if item.get("action") == "merge"]
+    projectize = [item for item in suggestions if item.get("action") == "projectize"]
+
+    lines = ["Suggestions (read-only candidates; not applied)"]
+    lines.extend(
+        _section(
+            "Delete candidates",
+            "no usage + no tests + no owner evidence — review before removing",
+            deletes[:max_each],
+            by_name,
+        )
+    )
+    lines.extend(
+        _section(
+            "Downgrade candidates",
+            "mostly broad/worker reads; may be a part of another skill, not a standalone",
+            downgrades[:max_each],
+            by_name,
+        )
+    )
+    if merges:
+        lines.extend(
+            _section(
+                "Merge candidates",
+                "overlap / co-use — optional second look",
+                merges[:max_each],
+                by_name,
+            )
+        )
+    if projectize:
+        lines.extend(
+            _section(
+                "Projectize candidates",
+                "looks project-local — optional second look",
+                projectize[:max_each],
+                by_name,
+            )
+        )
+    return lines
+
+
+def _section(
+    title: str,
+    blurb: str,
+    items: list[dict[str, Any]],
+    by_name: dict[str, dict[str, Any]],
+) -> list[str]:
+    lines = [f"{title}  ({len(items)})", f"  {blurb}"]
+    if not items:
+        lines.append("  (none)")
+        return lines
+    for item in items:
+        target = str(item.get("target") or "")
+        skill = by_name.get(target)
+        if skill is not None:
+            stats = f"{skill['direct_calls']}d/{skill.get('indirect_calls', 0)}i"
+        else:
+            stats = "n/a"
+        reason = str(item.get("reason") or "").strip()
+        if len(reason) > 72:
+            reason = reason[:69] + "..."
+        lines.append(f"  - {target}  [{stats}]  {reason}")
+    return lines
+
+
+def _stacked_bar(direct: int, indirect: int, maximum: int, width: int = _BAR_WIDTH) -> str:
+    total = direct + indirect
+    if maximum <= 0 or total <= 0:
+        return _EMPTY_MARK * width
+
+    direct_width = round(direct / maximum * width) if direct else 0
+    indirect_width = round(indirect / maximum * width) if indirect else 0
+    if direct > 0 and direct_width == 0:
+        direct_width = 1
+    if indirect > 0 and indirect_width == 0:
+        indirect_width = 1
+
+    filled = direct_width + indirect_width
+    if filled > width:
+        overflow = filled - width
+        # Prefer shrinking the larger segment.
+        if indirect_width >= direct_width:
+            indirect_width = max(1 if indirect else 0, indirect_width - overflow)
+        else:
+            direct_width = max(1 if direct else 0, direct_width - overflow)
+        filled = direct_width + indirect_width
+        if filled > width:
+            direct_width = max(0, direct_width - (filled - width))
+            filled = direct_width + indirect_width
+
+    return (
+        _DIRECT_MARK * direct_width
+        + _INDIRECT_MARK * indirect_width
+        + _EMPTY_MARK * max(0, width - filled)
+    )
 
 
 def _event(event: object) -> dict[str, str]:
@@ -32,51 +256,15 @@ def _event(event: object) -> dict[str, str]:
     source = event if isinstance(event, dict) else {}
     return {
         "timestamp": str(source.get("timestamp", "")),
-        "harness": str(source.get("harness", "")),
-        "session": str(source.get("session", "")),
         "skill": str(source.get("skill", "")),
-        "source": str(source.get("source", "")),
-        "confidence": str(source.get("confidence", "")),
         "category": str(source.get("category", "unknown")),
+        "harness": str(source.get("harness", "")),
     }
 
 
-def _metrics(
-    scan: ScanResult, events: tuple[dict[str, str], ...], test_runs: tuple[dict[str, Any], ...]
-) -> dict[str, dict[str, Any]]:
-    by_skill: dict[str, list[tuple[int, dict[str, str]]]] = defaultdict(list)
-    for index, event in enumerate(events, 1):
-        by_skill[event["skill"]].append((index, event))
-    tests = _tests_by_skill(test_runs)
-    metrics: dict[str, dict[str, Any]] = {}
-    for index, skill in enumerate(scan.skills, 1):
-        skill_events = by_skill.get(skill.name, [])
-        direct_events = [
-            (event_index, event)
-            for event_index, event in skill_events
-            if event["category"] == "activation"
-        ]
-        categories = Counter(event["category"] for _, event in skill_events)
-        test_rows = tests.get(skill.name, [])
-        metrics[skill.name] = {
-            "inventory_id": index,
-            "events": skill_events,
-            "direct_events": direct_events,
-            "frequency": len(direct_events),
-            "recent": max((event["timestamp"] for _, event in direct_events), default="never"),
-            "categories": categories,
-            "tests": test_rows,
-            "gaps": sum(row["activation_status"] == "activation_gap" for row in test_rows),
-            "false_positives": sum(
-                row["activation_status"] == "false_positive" for row in test_rows
-            ),
-        }
-    return metrics
-
-
-def _tests_by_skill(test_runs: tuple[dict[str, Any], ...]) -> dict[str, list[dict[str, str]]]:
-    result: dict[str, list[dict[str, str]]] = defaultdict(list)
-    for run_index, run in enumerate(test_runs, 1):
+def _tests_by_skill(test_runs: tuple[dict[str, Any], ...]) -> dict[str, dict[str, int]]:
+    result: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "passed": 0})
+    for run in test_runs:
         if not isinstance(run, dict):
             continue
         skill = str(run.get("skill") or run.get("target") or "")
@@ -85,284 +273,9 @@ def _tests_by_skill(test_runs: tuple[dict[str, Any], ...]) -> dict[str, list[dic
         trials = run.get("trials") or run.get("results") or [run]
         if not isinstance(trials, list):
             trials = [run]
-        for trial_index, trial in enumerate(trials, 1):
+        for trial in trials:
             row = trial if isinstance(trial, dict) else {}
-            result[skill].append(
-                {
-                    "id": f"test-{run_index}-{trial_index}",
-                    "run": str(run.get("run_id") or run.get("id") or run_index),
-                    "case": str(row.get("case_id") or row.get("case") or ""),
-                    "status": str(row.get("status") or run.get("status") or ""),
-                    "activation_status": str(
-                        row.get("activation_status") or row.get("activation") or ""
-                    ),
-                    "outcome_status": str(row.get("outcome_status") or row.get("outcome") or ""),
-                }
-            )
-    return result
-
-
-def _document(
-    scan: ScanResult,
-    events: tuple[dict[str, str], ...],
-    metrics: dict[str, dict[str, Any]],
-    suggestions: SuggestionResult,
-    test_runs: tuple[dict[str, Any], ...],
-) -> str:
-    ordered_skills = sorted(
-        scan.skills,
-        key=lambda skill: (-metrics[skill.name]["frequency"], skill.name),
-    )
-    max_frequency = max((metric["frequency"] for metric in metrics.values()), default=0)
-    rows = "".join(
-        _skill_row(skill, metrics[skill.name], max_frequency) for skill in ordered_skills
-    )
-    event_rows = "".join(_event_row(index, event) for index, event in enumerate(events, 1))
-    test_rows = "".join(
-        _test_row(skill.name, row) for skill in scan.skills for row in metrics[skill.name]["tests"]
-    )
-    suggestion_rows = "".join(_suggestion_row(item) for item in suggestions.suggestions)
-    return "\n".join(
-        (
-            "<!doctype html>",
-            '<html lang="en"><head><meta charset="utf-8">',
-            '<meta name="viewport" content="width=device-width, initial-scale=1">',
-            """<title>Skill2 Report</title><style>
-:root {
-  --ink:#171b1f; --muted:#667079; --line:#dfe3e6;
-  --soft:#f6f7f7; --yellow:#f5a000; --teal:#25bdb2;
-}
-* { box-sizing:border-box; }
-body {
-  font:14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;
-  margin:0; color:var(--ink); background:#fff; letter-spacing:0;
-}
-main { max-width:1320px; margin:auto; padding:40px 32px 72px; }
-.hero {
-  display:flex; align-items:center; gap:16px;
-  border-bottom:1px solid var(--line); padding-bottom:24px;
-}
-.mark {
-  display:inline-flex; align-items:flex-start; color:var(--yellow);
-  font-weight:800; font-size:42px; line-height:1;
-}
-.mark sup { color:var(--teal); font-size:15px; margin:0 0 0 2px; }
-h1 { font-size:26px; line-height:1.15; margin:0; }
-h2 { font-size:17px; margin:0 0 12px; }
-.sub { color:var(--muted); margin:4px 0 0; }
-.summary {
-  display:grid; grid-template-columns:repeat(5,minmax(110px,1fr));
-  border-bottom:1px solid var(--line);
-}
-.stat { padding:18px 12px 18px 0; }
-.stat strong { display:block; font-size:22px; }
-.stat span { color:var(--muted); font-size:12px; text-transform:uppercase; }
-section { margin:34px 0; }
-.table-wrap {
-  overflow-x:auto; border-top:1px solid var(--ink);
-  border-bottom:1px solid var(--line);
-}
-table { width:100%; border-collapse:collapse; background:#fff; min-width:880px; }
-th,td {
-  padding:10px 12px; text-align:left;
-  border-bottom:1px solid var(--line); vertical-align:top;
-}
-th {
-  background:var(--soft); font-size:11px; text-transform:uppercase;
-  color:var(--muted); white-space:nowrap;
-}
-tbody tr:hover { background:#fffaf0; }
-a { color:#006d68; text-decoration:none; }
-a:hover { text-decoration:underline; }
-.meter {
-  display:inline-block; width:72px; height:5px; background:#eceff0;
-  margin-left:8px; vertical-align:middle;
-}
-.meter i { display:block; height:100%; background:var(--yellow); }
-.zero { color:#9a4b00; }
-.ok { color:#397047; }
-.muted,.empty { color:var(--muted); }
-.empty { padding:16px; }
-ul { margin:0; padding-left:18px; }
-@media(max-width:700px) {
-  main { padding:24px 16px 48px; }
-  .summary { grid-template-columns:repeat(2,1fr); }
-  .hero { align-items:flex-start; }
-}
-</style></head><body><main>
-<header class="hero"><span class="mark">S<sup>2</sup></span><div>
-<h1>Skill Library Report</h1>
-<p class="sub">Local evidence. Direct calls separated from scan noise.</p>
-</div></header>""",
-            _summary_line(scan, events, suggestions, test_runs),
-            _section(
-                "inventory",
-                "Skill Inventory",
-                (
-                    "Skill",
-                    "Direct calls",
-                    "Last direct call",
-                    "Zero direct calls",
-                    "Body tokens",
-                    "Categories",
-                    "Activation gaps",
-                    "False positives",
-                ),
-                rows or _empty_row(8, "No scanned skills."),
-            ),
-            _section(
-                "suggestions",
-                "Suggestions",
-                ("Action", "Target", "Reason", "Evidence"),
-                suggestion_rows or _empty_row(4, "No conservative suggestion met the threshold."),
-            ),
-            _section(
-                "events",
-                "Event Evidence",
-                ("Timestamp", "Skill", "Session", "Category", "Confidence", "Source"),
-                event_rows or _empty_row(6, "No usage events."),
-            ),
-            _section(
-                "tests",
-                "Test Evidence",
-                ("Skill", "Run", "Case", "Status", "Activation", "Outcome"),
-                test_rows or _empty_row(6, "No test runs."),
-            ),
-            "</main></body></html>",
-        )
-    )
-
-
-def _summary_line(
-    scan: ScanResult,
-    events: tuple[dict[str, str], ...],
-    suggestions: SuggestionResult,
-    test_runs: tuple[dict[str, Any], ...],
-) -> str:
-    direct = sum(event["category"] == "activation" for event in events)
-    known = {skill.name for skill in scan.skills}
-    called = {
-        event["skill"]
-        for event in events
-        if event["category"] == "activation" and event["skill"] in known
-    }
-    zero = len(scan.skills) - len(called)
-    return (
-        '<nav class="summary">'
-        f'<a class="stat" href="#inventory"><strong>{len(scan.skills)}</strong>'
-        "<span>Skills</span></a>"
-        f'<a class="stat" href="#events"><strong>{direct}</strong><span>Direct calls</span></a>'
-        f'<a class="stat" href="#inventory"><strong>{zero}</strong><span>Zero direct</span></a>'
-        f'<a class="stat" href="#tests"><strong>{len(test_runs)}</strong><span>Test runs</span></a>'
-        f'<a class="stat" href="#suggestions"><strong>{len(suggestions.suggestions)}</strong>'
-        "<span>Suggestions</span></a>"
-        "</nav>"
-    )
-
-
-def _section(identifier: str, title: str, headers: tuple[str, ...], body: str) -> str:
-    header_cells = "".join(f"<th>{escape(header)}</th>" for header in headers)
-    return (
-        f'<section id="{escape(identifier)}"><h2>{escape(title)}</h2><div class="table-wrap">'
-        f"<table><thead><tr>{header_cells}</tr></thead><tbody>{body}</tbody></table></div></section>"
-    )
-
-
-def _skill_row(skill: Any, metric: dict[str, Any], max_frequency: int) -> str:
-    test_links = _links("test", [row["id"].removeprefix("test-") for row in metric["tests"]])
-    categories = (
-        ", ".join(
-            f"{escape(category)}: {count}"
-            for category, count in sorted(metric["categories"].items())
-        )
-        or "none"
-    )
-    recent = metric["recent"]
-    recent_label = recent[:10] if recent != "never" else recent
-    recent_link = (
-        f'<a href="#event-{metric["direct_events"][-1][0]}" '
-        f'title="{escape(recent)}">{escape(recent_label)}</a>'
-        if metric["direct_events"]
-        else "never"
-    )
-    frequency = metric["frequency"]
-    frequency_link = (
-        f'<a href="#event-{metric["direct_events"][0][0]}">{frequency}</a>'
-        if metric["direct_events"]
-        else "0"
-    )
-    width = round(100 * frequency / max_frequency) if max_frequency else 0
-    frequency_cell = f'{frequency_link}<span class="meter"><i style="width:{width}%"></i></span>'
-    zero = (
-        '<span class="zero">yes</span>'
-        if not metric["direct_events"]
-        else '<span class="ok">no</span>'
-    )
-    return (
-        "<tr>"
-        + "".join(
-            (
-                f"<td>{escape(skill.name)}</td>",
-                f"<td>{frequency_cell}</td>",
-                f"<td>{recent_link}</td>",
-                f"<td>{zero}</td>",
-                f"<td>{skill.body_tokens}</td>",
-                f"<td>{categories}</td>",
-                f"<td>{_number_link(metric['gaps'], test_links)}</td>",
-                f"<td>{_number_link(metric['false_positives'], test_links)}</td>",
-            )
-        )
-        + "</tr>"
-    )
-
-
-def _links(prefix: str, values: list[Any]) -> str:
-    return " ".join(f'<a href="#{prefix}-{escape(str(value))}">1</a>' for value in values)
-
-
-def _number_link(value: int, test_links: str) -> str:
-    return f"{value} {test_links}" if value else "0"
-
-
-def _event_row(index: int, event: dict[str, str]) -> str:
-    return (
-        f'<tr id="event-{index}">'
-        + "".join(
-            f"<td>{escape(event[key])}</td>"
-            for key in ("timestamp", "skill", "session", "category", "confidence", "source")
-        )
-        + "</tr>"
-    )
-
-
-def _test_row(skill: str, row: dict[str, str]) -> str:
-    return (
-        f'<tr id="{escape(row["id"])}">'
-        + "".join(
-            f"<td>{escape(value)}</td>"
-            for value in (
-                skill,
-                row["run"],
-                row["case"],
-                row["status"],
-                row["activation_status"],
-                row["outcome_status"],
-            )
-        )
-        + "</tr>"
-    )
-
-
-def _suggestion_row(suggestion: Any) -> str:
-    evidence = "".join(f"<li>{escape(item)}</li>" for item in suggestion.evidence)
-    cells = (
-        f"<td>{escape(suggestion.action)}</td>",
-        f"<td>{escape(suggestion.target)}</td>",
-        f"<td>{escape(suggestion.reason)}</td>",
-        f"<td><ul>{evidence}</ul></td>",
-    )
-    return "<tr>" + "".join(cells) + "</tr>"
-
-
-def _empty_row(columns: int, message: str) -> str:
-    return f'<tr><td class="empty" colspan="{columns}">{escape(message)}</td></tr>'
+            status = str(row.get("status") or row.get("outcome_status") or "")
+            result[skill]["total"] += 1
+            result[skill]["passed"] += int(status in {"pass", "outcome_pass"})
+    return dict(result)

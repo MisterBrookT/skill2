@@ -23,9 +23,9 @@ skill files + isolated tests + local usage
 | 来源 | 证据 | Skill2 采用 |
 | --- | --- | --- |
 | [Agent Skills spec](https://agentskills.io/specification) | 标准目录、frontmatter、progressive disclosure | 核心兼容契约 |
-| [Codex skills](https://developers.openai.com/codex/skills/) | Codex discovery、`agents/openai.yaml`、依赖声明 | Codex adapter |
+| [Codex skills](https://developers.openai.com/codex/skills/) | Codex discovery、可选 UI metadata、依赖声明 | Codex adapter |
 | [Anthropic skills](https://github.com/anthropics/skills) | 公开 skill 包与资源组织 | 资源随 skill 分发 |
-| [Superpowers](https://github.com/obra/superpowers) | skills-first、多 harness、测试、打包 | Build 方法与仓库结构 |
+| [Superpowers](https://github.com/obra/superpowers) | skills-first、多 harness、测试、打包 | Create 方法与仓库结构 |
 | [writing-skills](https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md) | `description=WHEN`、RED/GREEN/REFACTOR | skill 行为迭代 |
 | [Superpowers evals](https://github.com/prime-radiant-inc/superpowers-evals) | 真实 CLI、场景与后检 | live eval 参考 |
 
@@ -63,7 +63,7 @@ skill files + isolated tests + local usage
 
 - Activation 与 Outcome 分测。
 - 正例、邻近正例、反例、改写、压力场景。
-- 无 skill baseline；多 trial。
+- 无 skill baseline；默认一次 trial，复杂回归才增加次数。
 - 结构化事件与确定性断言优先。
 - 原始 transcript/artifacts 可审计。
 
@@ -85,7 +85,7 @@ skill files + isolated tests + local usage
 ## Skill2 差异
 
 - Skills-first，不是 CLI-first。
-- Codex-first 强隔离。
+- Codex 与 Claude Code 隔离 runner。
 - 测试结果与本地真实 usage 联合分析。
 - 从质量检查延伸到 merge/downgrade/projectize/prune。
 - 无云端 telemetry。
@@ -94,4 +94,4 @@ skill files + isolated tests + local usage
 
 本轮检查 GitHub 仓库与官方规范。Reddit、X、小红书不作为实现规范来源；未纳入结论。
 
-每个 Skill 的具体设计映射见 [skill-design/](skill-design/README.md)。
+当前取舍见 [DESIGN.md](DESIGN.md)。

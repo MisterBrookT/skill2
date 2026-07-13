@@ -1,7 +1,15 @@
 {
-  "name": "skill2",
-  "display_name": "Skill2",
+  "name": "skill2-marketplace",
   "description": "Skills for your skills.",
-  "repository": "https://github.com/MisterBrookT/skill2",
-  "license": "MIT"
+  "owner": {
+    "name": "MisterBrookT"
+  },
+  "plugins": [
+    {
+      "name": "skill2",
+      "description": "Skills for creating, testing, packaging, publishing, auditing, and visualizing skill libraries.",
+      "version": "0.1.0",
+      "source": "./"
+    }
+  ]
 }

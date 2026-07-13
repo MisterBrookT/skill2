@@ -2,7 +2,7 @@ schema_version: "1"
 skill: skill2-test
 agent: codex
 defaults:
-  repetitions: 3
+  repetitions: 1
 cases:
   - id: test-core
     name: 核心正例

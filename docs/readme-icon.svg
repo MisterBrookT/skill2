@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Skill2 icon">
-  <rect width="160" height="160" rx="36" fill="#1f2933"/>
-  <path d="M101 58H63c-14 0-24 8-24 21s10 21 24 21h34c13 0 22 8 22 20s-10 21-25 21H52" fill="none" stroke="#f59e0b" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M124 36h23v10h-12v7h11v10h-24v-9l12-8h-10z" fill="#2dd4bf"/>
+  <rect width="160" height="160" rx="32" fill="#0a0a0a"/>
+  <path d="M96 46H62C49 46 40 53 40 64s9 18 22 18h25c14 0 23 8 23 20s-10 21-26 21H47" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <g aria-label="Koina cat head">
+    <path d="M112 36l6-13 8 13M131 36l9-13 5 15" fill="#fff"/>
+    <rect x="111" y="32" width="35" height="28" rx="11" fill="#fff"/>
+    <circle cx="122" cy="44" r="2" fill="#0a0a0a"/>
+    <circle cx="136" cy="44" r="2" fill="#0a0a0a"/>
+    <path d="M127 50h4l-2 2.5z" fill="#0a0a0a"/>
+  </g>
 </svg>

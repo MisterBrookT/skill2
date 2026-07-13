@@ -10,6 +10,9 @@ FORCE=0
 CONFLICTS=0
 TMP_ROOT=""
 STAGING=""
+# Newline-separated: list_target/install_target run with IFS=newline for TARGETS.
+RETIRED_SKILLS="skill2-build
+skill2-prune"
 
 usage() {
   printf 'usage: ./install.sh [all|codex|claude] [--dry-run] [--force]\n' >&2
@@ -104,6 +107,12 @@ list_target() {
     [ "$status" != "replace" ] || CONFLICTS=1
     printf '  %s: %s\n' "$name" "$status"
   done
+  for name in $RETIRED_SKILLS; do
+    if [ -e "$destination/$name" ]; then
+      CONFLICTS=1
+      printf '  %s: retired (remove with --force)\n' "$name"
+    fi
+  done
 }
 
 write_provenance() {
@@ -136,6 +145,11 @@ replace_skill() {
 install_target() {
   destination="$1"
   mkdir -p "$destination"
+  if [ "$FORCE" -eq 1 ]; then
+    for name in $RETIRED_SKILLS; do
+      rm -rf "$destination/$name"
+    done
+  fi
   # This staging directory shares the target filesystem, so each final mv is a rename.
   STAGING="$(mktemp -d "$destination/.skill2-staging.XXXXXX")"
   for skill in "$ROOT"/skills/*; do
@@ -170,7 +184,7 @@ for target in $TARGETS; do
 done
 IFS="$old_ifs"
 
-printf 'cli: uv tool install --force %s\n' "$ROOT"
+printf 'cli: uv tool install --force --reinstall --refresh %s\n' "$ROOT"
 
 if [ "$DRY_RUN" -eq 1 ]; then
   printf 'dry-run: no files changed\n'
@@ -186,7 +200,7 @@ if ! command -v uv >/dev/null 2>&1; then
   printf 'error: uv is required to install the skill2 CLI\n' >&2
   exit 1
 fi
-if ! uv tool install --force "$ROOT"; then
+if ! uv tool install --force --reinstall --refresh "$ROOT"; then
   printf 'error: could not install the skill2 CLI\n' >&2
   exit 1
 fi
