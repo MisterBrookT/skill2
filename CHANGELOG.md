@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `tools/smoke_install.py` clean-install smoke for `install.sh`, `npx skills add`, and Claude local marketplace; resumable checkpoints under `.skill2/install-smoke/`.
+
 ## 0.1.0 - 2026-07-13
 
 - Six-skill library: create, test, package, publish, audit, visualize.
