@@ -184,8 +184,6 @@ for target in $TARGETS; do
 done
 IFS="$old_ifs"
 
-printf 'cli: uv tool install --force --reinstall --refresh %s\n' "$ROOT"
-
 if [ "$DRY_RUN" -eq 1 ]; then
   printf 'dry-run: no files changed\n'
   exit 0
@@ -196,15 +194,7 @@ if [ "$CONFLICTS" -eq 1 ] && [ "$FORCE" -ne 1 ]; then
   exit 1
 fi
 
-if ! command -v uv >/dev/null 2>&1; then
-  printf 'error: uv is required to install the skill2 CLI\n' >&2
-  exit 1
-fi
-if ! uv tool install --force --reinstall --refresh "$ROOT"; then
-  printf 'error: could not install the skill2 CLI\n' >&2
-  exit 1
-fi
-
+# Skills ship local scripts/run + bundled runtime; no global CLI install.
 IFS='
 '
 for target in $TARGETS; do

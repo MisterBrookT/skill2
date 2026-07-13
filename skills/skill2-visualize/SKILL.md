@@ -16,8 +16,8 @@ Present local inventory, usage, and test evidence in the terminal. When review i
 
 ## Method
 
-1. Run terminal `skill2 visualize` against the skill root, Codex + Claude usage roots, and test-run evidence.
-2. Run read-only `skill2 suggest --json` against the same roots (visualize CLI also embeds a short candidate block).
+1. Run terminal `uv run --script <skill-dir>/scripts/run -- visualize` against the skill root, Codex + Claude usage roots, and test-run evidence.
+2. Run read-only `uv run --script <skill-dir>/scripts/run -- suggest --json` against the same roots (visualize CLI also embeds a short candidate block).
 3. Present a short terminal summary only (see Output). Keep observed facts separate from inference.
 4. If delete/downgrade candidates were shown, end with the Output contract question (final line).
 5. Read `references/lifecycle-suggestions.md` only when the user asks for detailed expansion of a candidate.
@@ -67,7 +67,7 @@ Hard contract — when any delete or downgrade candidates are shown:
 - Do not auto-apply delete/downgrade/merge actions.
 
 ```bash
-skill2 visualize --skills skills --codex ~/.codex --claude ~/.claude
-skill2 visualize --skills skills --codex ~/.codex --claude ~/.claude --json
-skill2 suggest --skills skills --codex ~/.codex --claude ~/.claude --tests .skill2/test-runs --json
+uv run --script <skill-dir>/scripts/run -- visualize --skills skills --codex ~/.codex --claude ~/.claude
+uv run --script <skill-dir>/scripts/run -- visualize --skills skills --codex ~/.codex --claude ~/.claude --json
+uv run --script <skill-dir>/scripts/run -- suggest --skills skills --codex ~/.codex --claude ~/.claude --tests .skill2/test-runs --json
 ```

@@ -23,7 +23,7 @@ Find evidence-backed defects without changing the library.
 
 ## Method
 
-1. Run `skill2 lint <target> --json` first for a single Skill or a library. Save and use its static findings as evidence.
+1. Run `uv run --script <skill-dir>/scripts/run -- lint <target> --json` first for a single Skill or a library. Save and use its static findings as evidence.
 2. Manually review what CLI cannot prove: description semantics, ownership, scope, and trigger overlap.
 3. If CLI is unavailable or fails: state limitation / `inconclusive`. Never claim clean.
 4. Do not execute scripts. Do not auto-fix.
@@ -54,8 +54,8 @@ Find evidence-backed defects without changing the library.
 Return severity, file, evidence, impact, and smallest suggested change. Do not apply fixes unless requested.
 
 ```bash
-skill2 lint skills/<name> --json
-skill2 lint skills --json
-skill2 scan skills/<name> --json
-skill2 scan skills --json
+uv run --script <skill-dir>/scripts/run -- lint skills/<name> --json
+uv run --script <skill-dir>/scripts/run -- lint skills --json
+uv run --script <skill-dir>/scripts/run -- scan skills/<name> --json
+uv run --script <skill-dir>/scripts/run -- scan skills --json
 ```

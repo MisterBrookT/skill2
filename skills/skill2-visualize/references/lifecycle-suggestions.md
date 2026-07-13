@@ -19,7 +19,7 @@ Avoid the word "lifecycle" when talking to users. Prefer:
 
 ## Evidence
 
-Use read-only `skill2 suggest --json` as the deterministic candidate source. Prefer observed facts from:
+Use read-only `uv run --script <skill-dir>/scripts/run -- suggest --json` as the deterministic candidate source. Prefer observed facts from:
 
 - Inventory and ownership from scan
 - Usage events with source and confidence

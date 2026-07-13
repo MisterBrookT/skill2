@@ -33,7 +33,7 @@ Keep shared behavior in `skills/<name>/SKILL.md`. Add harness metadata only when
 Return candidate path, version, checksum, install-smoke result, and unresolved blockers. Hand candidate to Publish.
 
 ```bash
-skill2 scaffold skill-repo <name>
-skill2 lint skills
-skill2 package-check . --json
+uv run --script <skill-dir>/scripts/run -- scaffold skill-repo <name>
+uv run --script <skill-dir>/scripts/run -- lint skills
+uv run --script <skill-dir>/scripts/run -- package-check . --json
 ```

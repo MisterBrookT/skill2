@@ -41,5 +41,5 @@ Tag, push, release, registry, and marketplace actions require:
 Return preflight result, planned remote writes, approval state, published URLs, and public reinstall evidence.
 
 ```bash
-skill2 publish-check . --json
+uv run --script <skill-dir>/scripts/run -- publish-check . --json
 ```

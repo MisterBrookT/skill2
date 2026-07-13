@@ -52,6 +52,6 @@ Default one trial. Add repetitions only for known nondeterminism or regression c
 Fake runner tests validate adapter plumbing, not provider behavior. Never claim unrun results.
 
 ```bash
-skill2 test skills/<name> --agent <agent> --cases cases/<name>.yaml --baseline
-skill2 test skills/<name> --agent <agent> --cases cases/<name>.yaml --pack
+uv run --script <skill-dir>/scripts/run -- test skills/<name> --agent <agent> --cases cases/<name>.yaml --baseline
+uv run --script <skill-dir>/scripts/run -- test skills/<name> --agent <agent> --cases cases/<name>.yaml --pack
 ```

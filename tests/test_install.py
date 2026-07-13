@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -8,6 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 INSTALL = ROOT / "install.sh"
+BARE_SKILL2_CMD = re.compile(
+    r"(^|`)skill2 (scan|lint|test|package-check|publish-check|usage|suggest|visualize|scaffold)"
+)
+LOCAL_RUN_FORM = re.compile(
+    r"uv run --script <skill-dir>/scripts/run -- "
+    r"(scan|lint|test|package-check|publish-check|usage|suggest|visualize|scaffold)\b"
+)
 
 
 def source_skills() -> list[str]:
@@ -30,6 +38,11 @@ def fake_uv_env(root: Path, exit_code: int = 0) -> dict[str, str]:
         "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
         "SKILL2_TEST_UV_LOG": str(log),
     }
+
+
+def path_without_uv() -> str:
+    """PATH with no uv binary (install must not need global CLI tooling)."""
+    return "/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 def run_install(
@@ -56,6 +69,73 @@ def run_install(
 
 
 class InstallScriptTest(unittest.TestCase):
+    def test_install_does_not_require_or_invoke_uv_tool_install(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            env = fake_uv_env(home)
+            # Install must succeed with no uv on PATH at all.
+            no_uv = run_install(home, "codex", env={"PATH": path_without_uv()})
+            self.assertEqual(no_uv.returncode, 0, no_uv.stderr)
+            destination = home / ".agents" / "skills"
+            self.assertTrue((destination / "skill2-create" / "SKILL.md").is_file())
+            self.assertNotIn("uv tool install", no_uv.stdout)
+            self.assertNotIn("uv tool install", no_uv.stderr)
+            self.assertNotIn("uv is required", no_uv.stderr)
+
+            # With a logging fake uv present, install must never call it.
+            home2 = Path(tmp) / "home2"
+            home2.mkdir()
+            with_fake = run_install(home2, "claude", env=env)
+            self.assertEqual(with_fake.returncode, 0, with_fake.stderr)
+            log = home / "uv.log"
+            self.assertFalse(log.exists(), "install must never invoke uv")
+            if log.exists():
+                self.assertNotIn("tool install", log.read_text(encoding="utf-8"))
+
+    def test_installed_skills_include_executable_local_run_scripts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            result = run_install(home, "codex", env={"PATH": path_without_uv()})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            destination = home / ".agents" / "skills"
+            for name in source_skills():
+                skill = destination / name
+                run = skill / "scripts" / "run"
+                runtime = skill / "scripts" / "_runtime" / "skill2"
+                self.assertTrue(run.is_file(), f"missing {run}")
+                self.assertTrue(
+                    os.access(run, os.X_OK),
+                    f"scripts/run must be executable: {run}",
+                )
+                self.assertTrue(
+                    (runtime / "__init__.py").is_file(),
+                    f"missing bundled runtime: {runtime}",
+                )
+                self.assertTrue((skill / "SKILL.md").is_file())
+
+    def test_skill_docs_do_not_require_global_skill2_command(self) -> None:
+        offenders: list[str] = []
+        local_examples = 0
+        doc_paths = list((ROOT / "skills").glob("*/SKILL.md"))
+        doc_paths.extend((ROOT / "skills").glob("*/references/**/*.md"))
+        for path in sorted(doc_paths):
+            text = path.read_text(encoding="utf-8")
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                if BARE_SKILL2_CMD.search(line):
+                    offenders.append(f"{path.relative_to(ROOT)}:{lineno}:{line.strip()}")
+                if LOCAL_RUN_FORM.search(line):
+                    local_examples += 1
+        self.assertEqual(
+            offenders,
+            [],
+            "bare global skill2 commands remain in skill docs:\n" + "\n".join(offenders),
+        )
+        self.assertGreater(
+            local_examples,
+            0,
+            "skill docs must show uv run --script <skill-dir>/scripts/run -- <command>",
+        )
+
     def test_codex_installs_lists_statuses_and_is_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
@@ -83,13 +163,9 @@ class InstallScriptTest(unittest.TestCase):
             for name in source_skills():
                 self.assertIn(f"  {name}: unchanged", second.stdout)
             self.assertEqual(list(destination.glob(".skill2-staging.*")), [])
-            self.assertEqual(
-                (home / "uv.log").read_text(encoding="utf-8").splitlines(),
-                [
-                    f"tool install --force --reinstall --refresh {ROOT}",
-                    f"tool install --force --reinstall --refresh {ROOT}",
-                ],
-            )
+            # Installer must not call uv tool install (skills carry local runtime).
+            log = home / "uv.log"
+            self.assertFalse(log.exists() or (log.exists() and log.read_text(encoding="utf-8")))
 
     def test_rejects_multiple_targets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -225,31 +301,33 @@ class InstallScriptTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((home / ".agents" / "skills" / "demo" / "SKILL.md").exists())
 
-    def test_missing_uv_stops_before_skills_are_created(self) -> None:
+    def test_missing_uv_still_installs_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
-            result = run_install(home, "codex", env={"PATH": "/usr/bin:/bin:/usr/sbin:/sbin"})
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("uv is required", result.stderr)
-            self.assertFalse((home / ".agents").exists())
+            result = run_install(home, "codex", env={"PATH": path_without_uv()})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("uv is required", result.stderr)
+            self.assertNotIn("cli:", result.stdout)
+            self.assertTrue((home / ".agents" / "skills" / "skill2-create" / "SKILL.md").is_file())
 
-    def test_failed_cli_install_stops_before_skills_are_created(self) -> None:
+    def test_fake_uv_failure_is_ignored_because_uv_is_not_invoked(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             result = run_install(home, "codex", env=fake_uv_env(home, exit_code=1))
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("could not install the skill2 CLI", result.stderr)
-            self.assertFalse((home / ".agents").exists())
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("could not install the skill2 CLI", result.stderr)
+            self.assertTrue((home / ".agents" / "skills" / "skill2-create" / "SKILL.md").is_file())
+            self.assertFalse((home / "uv.log").exists())
 
-    def test_dry_run_previews_cli_without_running_uv(self) -> None:
+    def test_dry_run_does_not_preview_or_run_cli_install(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             env = fake_uv_env(home)
             result = run_install(home, "claude", "--dry-run", env=env)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn(
-                f"cli: uv tool install --force --reinstall --refresh {ROOT}", result.stdout
-            )
+            self.assertNotIn("cli:", result.stdout)
+            self.assertNotIn("uv tool install", result.stdout)
+            self.assertIn("dry-run: no files changed", result.stdout)
             self.assertFalse((home / "uv.log").exists())
             self.assertFalse((home / ".claude").exists())
 
