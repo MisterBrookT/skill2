@@ -69,17 +69,9 @@ Audit this skill library and show only evidence-backed findings.
 Visualize which skills are called directly and which have zero direct calls.
 ```
 
-## Local Evidence
+## Local-first evidence
 
-Skill2 scans local Agent session logs for exact `SKILL.md` reads. It separates direct activation signals from broad scans, maintenance, and worker reads. APFS does not retain historical file-open counts, so Skill2 does not claim complete usage history.
-
-Deterministic inventory and usage views run through the installed Skill-owned script:
-
-```bash
-uv run --script <skill-dir>/scripts/run -- visualize --skills ~/workspace/my-skill-library/skills --codex ~/.codex
-```
-
-Use `--json` for structured agent or script input. Low frequency is evidence, not a deletion decision. Output contains no prompt or transcript content.
+Skill2 visualizes skill inventory and usage from local agent session logs. Data stays on your machine; prompts and transcripts are never included.
 
 ## Design
 

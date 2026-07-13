@@ -69,17 +69,9 @@ git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/inst
 可视化哪些 Skills 被直接调用，哪些没有直接调用。
 ```
 
-## 本地证据
+## 本地优先证据
 
-Skill2 从本地 Agent session 日志识别精确 `SKILL.md` 读取，区分直接调用、批量扫描、维护、Worker 读取。APFS 不保存历史文件打开次数，因此 Skill2 不声称掌握完整使用历史。
-
-确定性库存与使用视图通过已安装 Skill 自带脚本运行：
-
-```bash
-uv run --script <skill-dir>/scripts/run -- visualize --skills ~/workspace/my-skill-library/skills --codex ~/.codex
-```
-
-需要结构化输入时使用 `--json`。低频是证据，不是删除结论。输出不包含 prompt 或 transcript。
+Skill2 从本地 Agent session 日志可视化 Skill 库存与使用情况。数据只留在你的机器；不包含 prompt 或 transcript。
 
 ## 设计
 
