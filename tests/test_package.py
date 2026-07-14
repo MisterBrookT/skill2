@@ -14,6 +14,53 @@ from skill2.package import package_check, publish_preflight, scaffold_skill_repo
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _add_manifests(root: Path, version: str = "0.1.0") -> None:
+    codex = root / ".codex-plugin"
+    claude = root / ".claude-plugin"
+    codex.mkdir()
+    claude.mkdir()
+    common = {
+        "name": root.name,
+        "version": version,
+        "description": f"{root.name} skill repository.",
+        "homepage": f"https://github.com/example/{root.name}",
+        "repository": f"https://github.com/example/{root.name}",
+        "license": "MIT",
+    }
+    (codex / "plugin.json").write_text(
+        json.dumps({**common, "skills": "skills"}), encoding="utf-8"
+    )
+    (claude / "plugin.json").write_text(json.dumps(common), encoding="utf-8")
+    (claude / "marketplace.json").write_text(
+        json.dumps(
+            {
+                "name": f"{root.name}-marketplace",
+                "description": f"{root.name} skill marketplace.",
+                "owner": {"name": "Test"},
+                "plugins": [
+                    {
+                        "name": root.name,
+                        "description": common["description"],
+                        "version": version,
+                        "source": "./",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _make_publishable(root: Path) -> None:
+    readme = root / "README.md"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "npx skills add .", f"npx skills add test-owner/{root.name}"
+        ),
+        encoding="utf-8",
+    )
+
+
 def _skill2_package_repo(tmp: Path) -> Path:
     """Packageable Skill2-marker repo with synced runtimes (temp only)."""
     from skill2.bundle import RUNTIME_SPECS, sync_skill_runtimes
@@ -42,21 +89,29 @@ class PackageTest(unittest.TestCase):
         created = scaffold_skill_repo(name, directory)
         root = directory / name
         self.assertIn(str(root / "skills" / name / "SKILL.md"), created)
-        self.assertTrue((root / "install.sh").stat().st_mode & 0o111)
+        self.assertFalse((root / "README.zh.md").exists())
+        self.assertFalse((root / "install.sh").exists())
         return root
 
     def test_scaffold_creates_lint_clean_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
-            self.assertTrue((root / ".claude-plugin" / "plugin.json").is_file())
-            marketplace = json.loads(
-                (root / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
-            )
-            self.assertEqual(marketplace["plugins"][0]["source"], "./")
             result = package_check(root)
             self.assertFalse(result.has_errors, result.to_dict())
             self.assertEqual(result.schema_version, "1")
             self.assertEqual(result.to_dict()["issues"], [])
+
+    def test_package_check_rejects_install_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp))
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8").replace(
+                    "npx skills add .", "npx skills add OWNER/demo-skill"
+                ),
+                encoding="utf-8",
+            )
+            self.assertIn("P2P003", {issue.rule_id for issue in package_check(root).issues})
 
     def test_package_check_rejects_stale_skill_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -120,6 +175,7 @@ class PackageTest(unittest.TestCase):
     def test_package_check_rejects_mismatched_claude_marketplace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
+            _add_manifests(root)
             path = root / ".claude-plugin" / "marketplace.json"
             payload = json.loads(path.read_text(encoding="utf-8"))
             payload["plugins"][0]["version"] = "0.2.0"
@@ -130,6 +186,7 @@ class PackageTest(unittest.TestCase):
     def test_package_check_reports_bash_manifest_and_content_risks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
+            _add_manifests(root)
             install = root / "install.sh"
             install.write_text("if then\n", encoding="utf-8")
             manifest = root / ".codex-plugin" / "plugin.json"
@@ -149,6 +206,8 @@ class PackageTest(unittest.TestCase):
     def test_publish_preflight_requires_consistent_version_and_clean_git(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
+            _add_manifests(root)
+            _make_publishable(root)
             self._commit(root)
             result = publish_preflight(root)
             self.assertFalse(result.has_errors, result.to_dict())
@@ -162,9 +221,10 @@ class PackageTest(unittest.TestCase):
             self.assertIn("P2P004", rules)
             self.assertIn("P2P005", rules)
 
-    def test_publish_preflight_rejects_multiple_install_commands(self) -> None:
+    def test_publish_preflight_allows_multiple_native_install_commands(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self.scaffold(Path(tmp))
+            _make_publishable(root)
             self._commit(root)
             readme = root / "README.md"
             readme.write_text(
@@ -173,7 +233,39 @@ class PackageTest(unittest.TestCase):
             )
             result = publish_preflight(root)
             rules = {issue.rule_id for issue in result.issues}
-            self.assertIn("P2P003", rules)
+            self.assertNotIn("P2P003", rules)
+            self.assertIn("P2P005", rules)
+
+    def test_publish_preflight_checks_localized_readme_only_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp))
+            _make_publishable(root)
+            self._commit(root)
+            self.assertFalse(publish_preflight(root).has_errors)
+
+            (root / "README.zh.md").write_text(
+                "# 中文\n\n## 安装\n\n```bash\nnpx skills add other/repo -g -a codex -y\n```\n",
+                encoding="utf-8",
+            )
+            result = publish_preflight(root)
+            self.assertIn("P2P003", {issue.rule_id for issue in result.issues})
+
+    def test_publish_preflight_rejects_local_only_install_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp))
+            self._commit(root)
+            self.assertIn("P2P003", {issue.rule_id for issue in publish_preflight(root).issues})
+
+    def test_publish_preflight_rejects_chinese_readme_as_english_canonical(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.scaffold(Path(tmp))
+            (root / "README.md").write_text(
+                "# Skill2\n\n这是一个 Skill Library。\n\n```bash\n"
+                "npx skills add test-owner/demo-skill -g -a codex -y\n```\n",
+                encoding="utf-8",
+            )
+            self._commit(root)
+            self.assertIn("P2P001", {issue.rule_id for issue in publish_preflight(root).issues})
 
     def test_public_readmes_native_install_surface(self) -> None:
         english = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -193,7 +285,7 @@ class PackageTest(unittest.TestCase):
             self.assertIn(codex_command, text)
             self.assertRegex(
                 text,
-                r"(?is)six self-contained skills|六个自包含\s*Skills",
+                r"(?is)five self-contained skills|五个自包含\s*Skills",
             )
             self.assertRegex(
                 text,
@@ -214,6 +306,7 @@ class PackageTest(unittest.TestCase):
                 r"安装六个\s*Skill2\s*Skills\s*和辅助\s*CLI|"
                 r"辅助\s*CLI",
             )
+            self.assertNotIn("skill2-publish", text)
         for command in (*claude_commands, codex_command):
             self.assertEqual(
                 english.count(command),

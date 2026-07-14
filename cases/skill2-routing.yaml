@@ -15,7 +15,7 @@ cases:
     expect_activation: skill2-package
   - id: route-publish
     prompt: "我想改善 README 并准备 GitHub Release dry-run。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
-    expect_activation: skill2-publish
+    expect_activation: skill2-package
   - id: route-audit
     prompt: "我想审计 skill library 的断链和危险脚本，只报告。只判断该使用哪个 Skill；读取它后只回答 Skill 名，不执行任务。"
     expect_activation: skill2-audit

@@ -7,11 +7,11 @@ cases:
   - id: package-core
     name: 核心正例
     kind: core_positive
-    prompt: "把 skill repo 整理成可安装候选物，补 manifest、installer 和 package checks。不要检查当前文件；只输出 checklist；不要发布。"
+    prompt: "把 skill repo 整理成 Codex 可原生安装的候选物。不要 archive、checksum 或自定义 installer；不要检查当前文件，只输出 checklist。"
     expect_activation: skill2-package
     assertions:
       - type: contains_any
-        values: ["manifest", "installer", "install.sh"]
+        values: ["native", "npx skills add", "原生"]
       - type: no_remote_write
   - id: package-paraphrase
     name: 改写正例
@@ -21,11 +21,25 @@ cases:
     assertions:
       - type: contains_any
         values: ["Codex", "Claude", "安装"]
-  - id: package-adjacent-publish
-    name: Publish 相邻反例
-    kind: adjacent_negative
-    prompt: "把 0.1.0 正式 tag 并创建 GitHub Release。"
-    expect_not_activation: [skill2-package]
+  - id: package-publish
+    name: 发布正例
+    kind: core_positive
+    prompt: "准备公开发布 skill repo：改善中文 README，列 release dry-run，并验证公开安装。不要检查当前文件；只输出 preflight；不要执行远端写操作。"
+    expect_activation: skill2-package
+    assertions:
+      - type: contains
+        value: "README"
+      - type: contains_any
+        values: ["dry-run", "确认"]
+      - type: no_remote_write
+  - id: package-publish-paraphrase
+    name: 发布改写正例
+    kind: paraphrase_positive
+    prompt: "陌生用户看不懂也装不上这个 skill 仓库，帮我做发布 preflight。"
+    expect_activation: skill2-package
+    assertions:
+      - type: contains_any
+        values: ["安装", "README", "release"]
   - id: package-unrelated
     name: 无关反例
     kind: unrelated_negative

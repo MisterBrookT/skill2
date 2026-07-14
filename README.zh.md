@@ -32,7 +32,7 @@
 使用 `skill2-test` 在隔离环境中测试触发、效果与路由。
 
 **想让 Skills 可以安装和分享？**
-使用 `skill2-package` 生成干净的安装候选物，再用 `skill2-publish` 验证文档、元数据与公开安装路径。
+使用 `skill2-package` 选择最轻的分发 profile，准备公开文档，并验证安装路径或 Release。
 
 **想了解和维护整个 Skill Library？**
 使用 `skill2-audit` 查找结构、安全与行为缺口；使用 `skill2-visualize` 查看库存、使用情况与测试状态。
@@ -46,7 +46,7 @@
 /plugin install skill2@skill2-marketplace
 ```
 
-安装六个自包含 Skills。
+安装五个自包含 Skills。
 
 ### Codex
 
@@ -54,7 +54,7 @@
 npx skills add MisterBrookT/skill2 -g -a codex -y
 ```
 
-为 Codex 复制六个自包含 Skills。
+为 Codex 复制五个自包含 Skills。
 
 ### 手工 fallback
 
@@ -70,8 +70,7 @@ git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/inst
 | --- | --- |
 | `skill2-create` | 创建、更新或重构 Skill。 |
 | `skill2-test` | 隔离测试触发和结果。 |
-| `skill2-package` | 生成可安装候选物；不写远端。 |
-| `skill2-publish` | 准备 README、Release、公开安装检查。 |
+| `skill2-package` | 打包、编写公开文档，并按需发布 Skill 仓库。 |
 | `skill2-audit` | 查找契约、安全、行为缺口。 |
 | `skill2-visualize` | 查看库存、直接调用、零调用候选、测试状态，以及保守的生命周期复审候选项。 |
 
@@ -89,7 +88,7 @@ Skill2 从本地 Agent session 日志可视化 Skill 库存与使用情况。数
 
 ## 设计
 
-Skills 是产品；确定性脚本为 Skills 提供支持。仓库必须符合自己教的规则。Package 不发布。Publish 的远端动作必须 dry-run 并获得明确确认。Visualize 不修改 Skill Library。
+Skills 是产品；确定性脚本为 Skills 提供支持。仓库必须符合自己教的规则。Package 默认原生分发；只有用户需要时才增加 artifact 或 release 工作。Visualize 不修改 Skill Library。
 
 | 方向 | 参考项目 | 采用内容 |
 | --- | --- | --- |

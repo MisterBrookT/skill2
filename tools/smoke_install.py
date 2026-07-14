@@ -25,7 +25,6 @@ SKILL_NAMES = (
     "skill2-audit",
     "skill2-create",
     "skill2-package",
-    "skill2-publish",
     "skill2-test",
     "skill2-visualize",
 )

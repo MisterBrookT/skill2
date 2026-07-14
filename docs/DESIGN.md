@@ -2,10 +2,10 @@
 
 ## 定位
 
-Skill2 是可安装的 Skill Library。六个自包含 Skills 管理其他 Skill Library；顶层 Python CLI 只服务仓库开发、生成与验证，不是用户安装前提。
+Skill2 是可安装的 Skill Library。五个自包含 Skills 管理其他 Skill Library；顶层 Python CLI 只服务仓库开发、生成与验证，不是用户安装前提。
 
 ```text
-create → test → package → publish
+create → test → package [native | artifact | release]
              audit
                     visualize
 ```
@@ -40,8 +40,7 @@ docs/                    prior art 与设计依据
 | --- | --- | --- |
 | `skill2-create` | 创建、更新、拆分、合并 Skill | 行为 trial、打包、发布 |
 | `skill2-test` | 隔离测试 activation 与 outcome | 修改 Skill |
-| `skill2-package` | 生成并检查可安装候选物 | 远端写入 |
-| `skill2-publish` | README、release、公开安装验证 | 未确认的 tag、push、upload |
+| `skill2-package` | 原生安装、artifact、README、release 与公开安装验证 | 未获授权或目标不明确的远端写入 |
 | `skill2-audit` | 发现格式、安全、职责与行为缺口 | 自动修复、生命周期决策 |
 | `skill2-visualize` | 终端展示 inventory/usage/test evidence；可选保守生命周期 review candidates | 写报告文件、自动删除/移动/合并 |
 
@@ -68,7 +67,7 @@ docs/                    prior art 与设计依据
 - Create 只负责 authoring，不运行昂贵 behavior trial；效果验证交给 `skill2-test`。
 - 不复制 Superpowers 完整 pressure-testing 流程；Skill2 默认一次 trial + 人工看产物。
 - 不依赖某一个 harness 的内置 creator；同一 Skill 源应跨 harness 使用。
-- 不混入 package、publish、release；避免触发重叠和远端副作用。
+- 不混入打包与发布；避免触发重叠和远端副作用。
 
 ### `skill2-test`
 
@@ -108,41 +107,23 @@ docs/                    prior art 与设计依据
 
 - 通用行为只放 `skills/`；harness metadata 由 adapter 生成，不复制多份 Skill 正文。
 - 有确定性工具的 Skill：候选物必须带 `scripts/` 与同步后的 `_runtime/`；脱离 checkout 仍可运行。
+- **Native profile 默认**：优先使用目标 harness 的 Git、plugin、marketplace 或 package manager 安装路径；不默认要求 archive、checksum 或自定义 installer。
+- **Artifact profile 按需**：只有用户要求分发 archive，或目标渠道强制要求时，才生成 versioned artifact、checksum 与 artifact smoke。
+- **Release profile 按需**：README、push、tag、release、registry 与 marketplace 属于同一 Skill 的公开分发阶段；Release 不隐含 Artifact。
 - 安装前显示目标路径与计划写入；发现已有文件时阻止覆盖，除非用户显式 `--force`。
 - 重复安装结果可预测；同版本、同内容不制造额外状态；`install.sh` 不安装全局 CLI。
 - 在临时 HOME 做 clean-install smoke，验证陌生机器路径，不依赖开发机缓存。
-- artifact 绑定 version 与 checksum，保证 Publish 操作的是同一候选物。
+- `README.md` 永远是英文 canonical；用户 query 以非英文为主或明确指定语言时，增加对应 `README.<language-code>.md`。当前中文入口保留 `README.zh.md`。
+- 公开 README 依次说明身份与价值、典型问题、原生安装、能力表、隐私/兼容与开发入口；能力数量从仓库推导，不硬编码。
+- 用户明确说 push、tag 或 release，即授权该项远端动作；仅当目标或范围不明确时再询问。执行前仍列出精确 destination 与 writes，执行后验证公开来源。
 
 取舍：
 
 - 不复制 prior-art 仓库的个人目录假设；安装位置由目标 harness adapter 决定。
 - 不自动执行第三方 Skill 附带脚本；可安装不等于脚本已获执行授权。
 - workspace 被信任不等于所有工具和网络动作被授权。
-- Package 无远端副作用；tag、push、release、upload 全部归 Publish。
-
-### `skill2-publish`
-
-参考：
-
-- [agent-scripts](https://github.com/steipete/agent-scripts)：透明安装、冲突处理、不同环境路径适配。
-- [awesome-copilot](https://github.com/github/awesome-copilot)：schema 与 CI gate 先于公开分发。
-- [superpowers-marketplace](https://github.com/obra/superpowers-marketplace)：marketplace manifest 保持薄层，Skill 内容仍由源仓库维护。
-
-采用：
-
-- README 只承诺已交付能力：Claude marketplace、Codex `npx skills add`、手工 fallback；兼容性、隐私与限制说清楚。
-- 中英文安装命令字节级一致；不宣称尚未存在的 Codex `/plugins` 上架。
-- 发布前检查 package、tests、CI、working tree、version、changelog、artifact 与 checksum。
-- 公开安装 smoke：按 README 安装后，至少跑一个 Skill-owned command。
-- 所有远端动作先输出精确 dry-run，再获得用户显式确认。
-- 发布后从公开 URL 重新安装，验证 README、manifest、installer 与 release 指向同一版本。
-
-取舍：
-
-- Publish 不重做 package 内部；候选物失败时退回 Package。
-- 不把用户说“发布一下”解释成对所有 tag、push、registry 自动授权；远端动作逐项可见。
-- 支持发布到现有 registry/marketplace，但不在 Skill2 内自建 registry 服务。
-- 不提交 OpenAI curated marketplace，除非用户明确授权。
+- Native-only 工作不增加 artifact 成本；纯内容仓库不强制 build。
+- 只有显式请求或渠道要求时才做远端动作；不自建 registry，不擅自提交 OpenAI curated marketplace。
 
 ### `skill2-audit`
 

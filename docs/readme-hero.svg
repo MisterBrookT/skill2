@@ -18,7 +18,7 @@
   <g transform="translate(70 180)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
     <rect width="330" height="420" rx="12" fill="#0a0a0a"/>
     <text x="26" y="42" fill="#fff" font-size="17" font-weight="700">$ skill2</text>
-    <text x="26" y="72" fill="#999" font-size="12">one library · six focused skills</text>
+    <text x="26" y="72" fill="#999" font-size="12">one library · five focused skills</text>
     <line x1="26" y1="96" x2="304" y2="96" stroke="#444"/>
 
     <g fill="#fff" font-size="14">
@@ -26,16 +26,14 @@
       <text x="26" y="180">02  test</text>
       <text x="26" y="225">03  audit</text>
       <text x="26" y="270">04  package</text>
-      <text x="26" y="315">05  publish</text>
-      <text x="26" y="360">06  visualize</text>
+      <text x="26" y="315">05  visualize</text>
     </g>
     <g fill="#777" font-size="12" text-anchor="end">
       <text x="304" y="135">write</text>
       <text x="304" y="180">prove</text>
       <text x="304" y="225">inspect</text>
-      <text x="304" y="270">install</text>
-      <text x="304" y="315">release</text>
-      <text x="304" y="360">understand</text>
+      <text x="304" y="270">install / ship</text>
+      <text x="304" y="315">understand</text>
     </g>
     <text x="26" y="398" fill="#aaa" font-size="12">agent judgment + deterministic CLI</text>
   </g>
@@ -95,34 +93,20 @@
       <rect width="398" height="36" rx="9" fill="#111"/>
       <rect y="27" width="398" height="9" fill="#111"/>
       <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">04  PACKAGE</text>
-      <text x="18" y="66" fill="#111" font-size="13">Build installable candidate.</text>
-      <text x="18" y="91" fill="#666" font-size="12">manifests · installer · conflicts</text>
-      <text x="18" y="111" fill="#666" font-size="12">no remote writes</text>
+      <text x="18" y="66" fill="#111" font-size="13">Package or publish Skills.</text>
+      <text x="18" y="91" fill="#666" font-size="12">native · artifact · release</text>
+      <text x="18" y="111" fill="#666" font-size="12">smallest profile first</text>
       <g fill="none" stroke="#111" stroke-width="1.7" stroke-linejoin="round">
         <path d="M321 73l23-12 23 12-23 12z"/>
         <path d="M321 73v23l23 12 23-12V73M344 85v23"/>
         <path d="M336 65l23 12"/>
       </g>
     </g>
-    <g transform="translate(0 288)">
+    <g transform="translate(210 288)">
       <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
       <rect width="398" height="36" rx="9" fill="#111"/>
       <rect y="27" width="398" height="9" fill="#111"/>
-      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">05  PUBLISH</text>
-      <text x="18" y="66" fill="#111" font-size="13">Prepare public release.</text>
-      <text x="18" y="91" fill="#666" font-size="12">README · version · changelog</text>
-      <text x="18" y="111" fill="#666" font-size="12">confirmation-gated release</text>
-      <g fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M344 96V66M334 76l10-10 10 10"/>
-        <path d="M324 86v18h40V86"/>
-        <line x1="331" y1="95" x2="357" y2="95"/>
-      </g>
-    </g>
-    <g transform="translate(420 288)">
-      <rect width="398" height="126" rx="10" fill="#fff" stroke="#111" stroke-width="2"/>
-      <rect width="398" height="36" rx="9" fill="#111"/>
-      <rect y="27" width="398" height="9" fill="#111"/>
-      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">06  VISUALIZE</text>
+      <text x="18" y="24" fill="#fff" font-size="14" font-weight="700">05  VISUALIZE</text>
       <text x="18" y="66" fill="#111" font-size="13">See library health.</text>
       <text x="18" y="91" fill="#666" font-size="12">usage · tests · lifecycle</text>
       <text x="18" y="111" fill="#666" font-size="12">terminal-first, read-only</text>
@@ -137,6 +121,6 @@
     </g>
   </g>
 
-  <text x="70" y="690" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">CREATE → TEST → AUDIT → PACKAGE → PUBLISH → VISUALIZE</text>
+  <text x="70" y="690" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">CREATE → TEST → AUDIT → PACKAGE → VISUALIZE</text>
   <text x="1330" y="690" fill="#666" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">NO HOSTED SERVICE · NO TELEMETRY</text>
 </svg>

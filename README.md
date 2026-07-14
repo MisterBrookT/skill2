@@ -32,7 +32,7 @@ Use `skill2-create` to define clear scope, triggers, structure, and resources.
 Use `skill2-test` to test activation, outcomes, and routing in isolation.
 
 **Want to make your skills installable and share them?**
-Use `skill2-package` to build a clean install candidate, then `skill2-publish` to verify documentation, metadata, and public install paths.
+Use `skill2-package` to choose the lightest distribution profile, prepare public documentation, and verify install paths or releases.
 
 **Want to understand and maintain your skill library?**
 Use `skill2-audit` to find structural, safety, and behavior gaps. Use `skill2-visualize` to view inventory, usage, and test status.
@@ -46,7 +46,7 @@ Use `skill2-audit` to find structural, safety, and behavior gaps. Use `skill2-vi
 /plugin install skill2@skill2-marketplace
 ```
 
-Installs six self-contained Skills.
+Installs five self-contained Skills.
 
 ### Codex
 
@@ -54,7 +54,7 @@ Installs six self-contained Skills.
 npx skills add MisterBrookT/skill2 -g -a codex -y
 ```
 
-Copies the six self-contained Skills for Codex.
+Copies the five self-contained Skills for Codex.
 
 ### Manual fallback
 
@@ -70,8 +70,7 @@ Copies Skills only (`install.sh` supports `--dry-run` and conflict-gated `--forc
 | --- | --- |
 | `skill2-create` | Creating, updating, or restructuring a skill. |
 | `skill2-test` | Testing activation and outcome in isolation. |
-| `skill2-package` | Producing an installable candidate without remote writes. |
-| `skill2-publish` | Preparing README, release, and public install checks. |
+| `skill2-package` | Packaging, documenting, and optionally publishing a Skill repository. |
 | `skill2-audit` | Finding contract, safety, and behavior gaps. |
 | `skill2-visualize` | Viewing inventory, direct calls, zero-use candidates, test status, and conservative lifecycle review candidates. |
 
@@ -89,7 +88,7 @@ Skill2 visualizes skill inventory and usage from local agent session logs. Data 
 
 ## Design
 
-Skills are the product; deterministic scripts support them. The repository dogfoods every rule it teaches. Package never publishes. Publish requires dry-run and explicit confirmation. Visualize never changes a library.
+Skills are the product; deterministic scripts support them. The repository dogfoods every rule it teaches. Package defaults to native distribution and adds artifact or release work only when requested. Visualize never changes a library.
 
 | Area | Prior art | Adopted |
 | --- | --- | --- |

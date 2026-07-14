@@ -28,12 +28,7 @@ RUNTIME_SPECS: dict[str, RuntimeSpec] = {
         ("PyYAML>=6.0.2,<7", "markdown-it-py>=3.0,<5"),
     ),
     "skill2-package": RuntimeSpec(
-        ("scaffold", "lint", "package-check"),
-        ("cli", "package", "lint", "scan", "bundle"),
-        ("PyYAML>=6.0.2,<7", "markdown-it-py>=3.0,<5", "skills-ref>=0.1.1,<0.2"),
-    ),
-    "skill2-publish": RuntimeSpec(
-        ("publish-check",),
+        ("scaffold", "lint", "package-check", "publish-check"),
         ("cli", "package", "lint", "scan", "bundle"),
         ("PyYAML>=6.0.2,<7", "markdown-it-py>=3.0,<5", "skills-ref>=0.1.1,<0.2"),
     ),

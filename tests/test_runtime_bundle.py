@@ -26,7 +26,7 @@ def _fingerprint_real_skill_scripts() -> dict[str, tuple[int, int, str]]:
 
 
 def _make_temp_repo() -> tempfile.TemporaryDirectory[str]:
-    """Canonical src + empty six skill dirs; sync only touches this tree."""
+    """Canonical src + empty five skill dirs; sync only touches this tree."""
     tmp = tempfile.TemporaryDirectory()
     repo = Path(tmp.name)
     shutil.copytree(ROOT / "src" / "skill2", repo / "src" / "skill2")
@@ -221,19 +221,20 @@ class RuntimeBundleTest(unittest.TestCase):
                 combined,
             )
 
-    def test_package_and_publish_runtimes_include_bundle(self) -> None:
+    def test_package_runtime_includes_publish_check_and_bundle(self) -> None:
         from skill2.bundle import sync_skill_runtimes
 
         with _make_temp_repo() as tmp:
             repo = Path(tmp)
             sync_skill_runtimes(repo)
-            for skill_name in ("skill2-package", "skill2-publish"):
-                runtime = repo / "skills" / skill_name / "scripts" / "_runtime" / "skill2"
-                self.assertTrue(
-                    (runtime / "bundle.py").is_file(),
-                    f"{skill_name} runtime missing bundle.py",
-                )
-                self.assertTrue((runtime / "package.py").is_file())
+            runtime = repo / "skills" / "skill2-package" / "scripts" / "_runtime" / "skill2"
+            self.assertTrue((runtime / "bundle.py").is_file())
+            self.assertTrue((runtime / "package.py").is_file())
+            manifest = json.loads(
+                (repo / "skills" / "skill2-package" / "scripts" / ".runtime-manifest.json")
+                .read_text(encoding="utf-8")
+            )
+            self.assertIn("publish-check", manifest["commands"])
 
 
 if __name__ == "__main__":

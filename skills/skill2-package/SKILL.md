@@ -1,17 +1,23 @@
 ---
 name: skill2-package
-description: "Use when making a skill repository installable, adding manifests or installers, building artifacts, or checking package compatibility."
+description: "Use when making a skill repository installable or public: manifests, README, artifacts, releases, publishing, or package checks."
 ---
 
-# Package Skill Repositories
+# Package and Publish Skill Repositories
 
-Produce a reviewable, reproducible install candidate without remote writes.
+Make a Skill repository installable. Add public presentation or remote release work only when requested.
 
-## Ownership
+## Select a Profile
 
-- Package owns repository shape, required manifests, installer, artifact, checksum, and clean-install smoke test.
-- Publish owns public README, repository metadata, tag, release, registry, and marketplace actions.
-- Never tag, push, release, or upload.
+- **Native (default):** use the target harness's Git, plugin, marketplace, or package-manager install path. Do not require an archive, checksum, or custom installer.
+- **Artifact:** use only when the user requests a distributable archive or the destination requires one. Add versioned artifact, checksum, and artifact install smoke.
+- **Release:** use only when the user requests public documentation, push, tag, release, registry, or marketplace work. Read [references/publish.md](references/publish.md).
+
+Use the smallest profile that satisfies the request. Profiles compose; Release does not imply Artifact.
+
+## README Language
+
+`README.md` is always canonical English. When the user's query is primarily non-English, add `README.<language-code>.md`; Chinese uses `README.zh.md`. Explicit language requests override query detection. Preserve existing translations unless removal is requested.
 
 ## Candidate
 
@@ -19,21 +25,25 @@ Keep shared behavior in `skills/<name>/SKILL.md`. Add harness metadata only when
 
 When a Skill ships deterministic tooling, the installed candidate must include that Skill's `scripts/` entrypoint and generated `_runtime/` (or equivalent self-contained resources). Detached install paths must not require repository `src/`, `.venv`, or a global `skill2` CLI.
 
-## Gates
+## Native Gates
 
 - Every Skill passes format and repository lint.
 - References, scripts, and assets resolve.
 - Scripts are auditable and executable when required.
 - Skill-owned runtimes stay in sync with canonical source when the repo generates them.
-- Installer is explicit, repeatable, conflict-aware, and safe to preview.
 - Candidate contains no secrets, accidental local paths, or unrelated large files.
-- Clean temporary installation succeeds without a global helper CLI.
-- Version and checksum identify exact artifact.
-- README installation commands, when present, target the candidate and stay equivalent across languages.
+- Documented native install path succeeds in a clean temporary home when feasible.
+- An installer, when shipped, is explicit, repeatable, conflict-aware, and safe to preview.
+
+## Artifact Gates
+
+- Artifact contains only the intended install candidate.
+- Version and checksum identify the exact artifact.
+- Clean artifact installation succeeds without repository-only dependencies.
 
 ## Output
 
-Return candidate path, version, checksum, install-smoke result, and unresolved blockers. Hand candidate to Publish.
+Return selected profiles, candidate or public destination, relevant verification, remote writes performed, and unresolved blockers.
 
 ```bash
 uv run --script <skill-dir>/scripts/run -- scaffold skill-repo <name>

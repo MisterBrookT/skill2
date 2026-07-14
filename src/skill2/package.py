@@ -28,7 +28,9 @@ _DESTRUCTIVE_COMMAND_RE = re.compile(
 _PIPE_SHELL_RE = re.compile(r"\b(?:curl|wget)\b[^\n]*\|\s*(?:ba)?sh\b", re.IGNORECASE)
 _INSTALL_COMMAND_RE = re.compile(
     r"^\s*(?:curl\b[^\n]*\|\s*(?:ba)?sh\b|wget\b[^\n]*\|\s*(?:ba)?sh\b|"
-    r"(?:uv\s+tool|pip(?:x)?|npm|brew)\s+install\b|(?:\.?/)?install\.sh\b|git\s+clone\b).*$",
+    r"(?:uv\s+tool|pip(?:x)?|npm|brew)\s+install\b|(?:\.?/)?install\.sh\b|git\s+clone\b|"
+    r"npx\s+skills\s+add\b|claude\s+plugin\s+(?:marketplace\s+add|install)\b|"
+    r"/plugin\s+(?:marketplace\s+add|install)\b).*$",
     re.IGNORECASE | re.MULTILINE,
 )
 _IGNORED_DIRS = {
@@ -45,7 +47,7 @@ _IGNORED_DIRS = {
     "src",
     "tests",
 }
-_REQUIRED_FILES = ("README.md", "LICENSE", "CHANGELOG.md", "install.sh")
+_REQUIRED_FILES = ("README.md", "LICENSE")
 
 
 @dataclass(frozen=True)
@@ -94,6 +96,7 @@ def package_check(path: Path) -> PackageResult:
     issues.extend(_claude_marketplace_issues(root))
     issues.extend(_content_issues(root))
     issues.extend(_runtime_integrity_issues(root))
+    issues.extend(_install_command_issues(root))
     return _result(root, issues)
 
 
@@ -101,9 +104,8 @@ def publish_preflight(path: Path) -> PackageResult:
     result = package_check(path)
     root = Path(result.root)
     issues = list(result.issues)
-    issues.extend(_bilingual_readme_issues(root))
-    issues.extend(_brand_graphic_issues(root))
-    issues.extend(_install_command_issues(root))
+    issues.extend(_localized_readme_issues(root))
+    issues.extend(_public_install_command_issues(root))
     issues.extend(_version_consistency_issues(root))
     issues.extend(_git_status_issues(root))
     return _result(root, issues)
@@ -118,63 +120,14 @@ def scaffold_skill_repo(name: str, output_dir: Path) -> list[str]:
         raise FileExistsError(f"output already exists: {root}")
 
     skill_dir = root / "skills" / name
-    brand_path = root / "assets" / f"{name}-icon.svg"
     files = {
         root / "README.md": _english_readme(name),
-        root / "README.zh.md": _chinese_readme(name),
         root / "LICENSE": "MIT License\n\nCopyright (c) 2026\n",
-        root / "CHANGELOG.md": "# Changelog\n\n## 0.1.0\n\n- Initial release.\n",
-        root / "install.sh": _installer(),
-        root / "pyproject.toml": _pyproject(name),
-        root / ".codex-plugin" / "plugin.json": json.dumps(
-            {
-                "name": name,
-                "version": "0.1.0",
-                "description": f"{name} skill repository.",
-                "homepage": f"https://github.com/example/{name}",
-                "repository": f"https://github.com/example/{name}",
-                "skills": "skills",
-                "license": "MIT",
-            },
-            indent=2,
-        )
-        + "\n",
-        root / ".claude-plugin" / "plugin.json": json.dumps(
-            {
-                "name": name,
-                "version": "0.1.0",
-                "description": f"{name} skill repository.",
-                "homepage": f"https://github.com/example/{name}",
-                "repository": f"https://github.com/example/{name}",
-                "license": "MIT",
-            },
-            indent=2,
-        )
-        + "\n",
-        root / ".claude-plugin" / "marketplace.json": json.dumps(
-            {
-                "name": f"{name}-marketplace",
-                "description": f"{name} skill marketplace.",
-                "owner": {"name": "TODO"},
-                "plugins": [
-                    {
-                        "name": name,
-                        "description": f"{name} skill repository.",
-                        "version": "0.1.0",
-                        "source": "./",
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
         skill_dir / "SKILL.md": _skill_file(name),
-        brand_path: _brand_svg(name),
     }
     for target, content in files.items():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
-    (root / "install.sh").chmod(0o755)
     return [str(target) for target in sorted(files)]
 
 
@@ -227,9 +180,11 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
     ]
     manifests: list[tuple[Path, dict[str, object]]] = []
     issues: list[Issue] = []
+    found_candidate = False
     for candidate in candidates:
         if not candidate.exists():
             continue
+        found_candidate = True
         if not candidate.is_file() or candidate.is_symlink():
             issues.append(
                 Issue(
@@ -252,12 +207,12 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
         manifests.append((candidate, loaded))
 
     if not manifests:
-        issues.append(
-            Issue(Severity.ERROR, str(root), "no supported JSON manifest found", "P2M001")
-        )
+        if found_candidate and not issues:
+            issues.append(
+                Issue(Severity.ERROR, str(root), "no supported JSON manifest found", "P2M001")
+            )
         return issues, manifests
 
-    has_skills_path = False
     for candidate, manifest in manifests:
         require_version = candidate.name == "manifest.json" or candidate.parts[-2] in {
             ".codex-plugin",
@@ -278,7 +233,6 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
         skills = manifest.get("skills")
         if skills is None:
             continue
-        has_skills_path = True
         if not isinstance(skills, str) or not skills or Path(skills).is_absolute():
             issues.append(
                 Issue(
@@ -308,10 +262,6 @@ def _manifest_issues(root: Path) -> tuple[list[Issue], list[tuple[Path, dict[str
                     Severity.ERROR, str(candidate), "manifest skills directory is missing", "P2M004"
                 )
             )
-    if not has_skills_path:
-        issues.append(
-            Issue(Severity.ERROR, str(root), "no manifest declares a skills path", "P2M004")
-        )
     return issues, manifests
 
 
@@ -433,91 +383,100 @@ def _runtime_integrity_issues(root: Path) -> list[Issue]:
     return issues
 
 
-def _bilingual_readme_issues(root: Path) -> list[Issue]:
+def _localized_readme_issues(root: Path) -> list[Issue]:
     english = root / "README.md"
-    chinese = root / "README.zh.md"
-    if not english.is_file() or not chinese.is_file():
-        return [
-            Issue(Severity.ERROR, str(root), "README.md and README.zh.md are required", "P2P001")
-        ]
+    if not english.is_file():
+        return [Issue(Severity.ERROR, str(english), "README.md is required", "P2P001")]
     english_text = _read_text(english) or ""
-    chinese_text = _read_text(chinese) or ""
     issues: list[Issue] = []
-    if not re.search(r"[A-Za-z]", english_text):
-        issues.append(
-            Issue(Severity.ERROR, str(english), "README.md must include English content", "P2P001")
-        )
-    if not re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", chinese_text):
+    prose = re.sub(r"```.*?```", "", english_text, flags=re.DOTALL)
+    if len(re.findall(r"\b[A-Za-z]{2,}\b", prose)) < 5:
         issues.append(
             Issue(
-                Severity.ERROR, str(chinese), "README.zh.md must include Chinese content", "P2P001"
+                Severity.ERROR,
+                str(english),
+                "README.md must include substantive English prose",
+                "P2P001",
             )
         )
+    for localized in sorted(root.glob("README.*.md")):
+        locale = localized.name.removeprefix("README.").removesuffix(".md")
+        text = _read_text(localized) or ""
+        if locale.lower().startswith("zh") and not re.search(
+            r"[\u3400-\u4dbf\u4e00-\u9fff]", text
+        ):
+            issues.append(
+                Issue(
+                    Severity.ERROR,
+                    str(localized),
+                    f"{localized.name} must include Chinese content",
+                    "P2P001",
+                )
+            )
+        elif not text.strip():
+            issues.append(
+                Issue(Severity.ERROR, str(localized), "localized README is empty", "P2P001")
+            )
     return issues
-
-
-def _brand_graphic_issues(root: Path) -> list[Issue]:
-    readme = root / "README.md"
-    text = _read_text(readme) or ""
-    targets = re.findall(
-        r"!\[[^]]*]\(([^)\s]+)\)|<img[^>]+src=[\"']([^\"']+)[\"']", text, re.IGNORECASE
-    )
-    for markdown_target, html_target in targets:
-        target = markdown_target or html_target
-        if re.match(r"https?://", target):
-            continue
-        candidate = (root / target).resolve()
-        try:
-            candidate.relative_to(root)
-        except ValueError:
-            continue
-        if candidate.is_file() and candidate.suffix.lower() in {
-            ".gif",
-            ".jpeg",
-            ".jpg",
-            ".png",
-            ".svg",
-            ".webp",
-        }:
-            return []
-    return [
-        Issue(
-            Severity.ERROR, str(readme), "README.md must reference a local brand graphic", "P2P002"
-        )
-    ]
 
 
 def _install_command_issues(root: Path) -> list[Issue]:
     by_file: dict[str, set[str]] = {}
-    for relative in ("README.md", "README.zh.md"):
-        text = _read_text(root / relative) or ""
-        by_file[relative] = {
-            " ".join(match.split()) for match in _INSTALL_COMMAND_RE.findall(text)
-        }
+    readmes = [root / "README.md", *sorted(root.glob("README.*.md"))]
+    for readme in readmes:
+        text = _read_text(readme) or ""
+        by_file[readme.name] = {match.strip() for match in _INSTALL_COMMAND_RE.findall(text)}
     english = by_file.get("README.md", set())
-    chinese = by_file.get("README.zh.md", set())
     issues: list[Issue] = []
-    if english != chinese:
+    for relative, commands in by_file.items():
+        if relative == "README.md" or commands == english:
+            continue
         issues.append(
             Issue(
                 Severity.ERROR,
-                str(root / "README.md"),
-                "README install commands must match between English and Chinese",
+                str(root / relative),
+                "localized README install commands must match README.md",
                 "P2P003",
             )
         )
-    # Package-manager install lines (pip/npm/curl|sh/git clone/install.sh) stay one set.
-    # Harness-native lines (/plugin, npx skills add) are not in this matcher.
-    if len(english) != 1:
+    if not english:
         issues.append(
             Issue(
                 Severity.ERROR,
                 str(root / "README.md"),
-                "README must show one matching package-manager/manual fallback install command",
+                "README.md must show at least one native or manual install command",
+                "P2P003",
+            )
+        )
+    elif any("OWNER/" in command or re.search(r"<[^>]+>", command) for command in english):
+        issues.append(
+            Issue(
+                Severity.ERROR,
+                str(root / "README.md"),
+                "README.md install commands must replace repository placeholders",
                 "P2P003",
             )
         )
     return issues
+
+
+def _public_install_command_issues(root: Path) -> list[Issue]:
+    text = _read_text(root / "README.md") or ""
+    commands = {match.strip() for match in _INSTALL_COMMAND_RE.findall(text)}
+    local_only = commands and all(
+        re.match(r"^npx\s+skills\s+add\s+\.?/?(?:\s|$)", command, re.IGNORECASE)
+        for command in commands
+    )
+    if not local_only:
+        return []
+    return [
+        Issue(
+            Severity.ERROR,
+            str(root / "README.md"),
+            "public README must replace local-only install sources",
+            "P2P003",
+        )
+    ]
 
 
 def _version_consistency_issues(root: Path) -> list[Issue]:
@@ -597,48 +556,12 @@ def _read_text(path: Path) -> str | None:
 
 def _english_readme(name: str) -> str:
     return (
-        f'<img src="assets/{name}-icon.svg" width="72" alt="{name} icon">\n\n'
         f"# {name}\n\n"
         "A reusable agent skill repository.\n\n"
-        "## Install\n\n```bash\n./install.sh\n```\n"
+        "## Install\n\n```bash\n"
+        "npx skills add . -g -a codex -y\n"
+        "```\n"
     )
-
-
-def _chinese_readme(name: str) -> str:
-    return (
-        f'<img src="assets/{name}-icon.svg" width="72" alt="{name} 图标">\n\n'
-        f"# {name}\n\n"
-        "可复用的 agent skill 仓库。\n\n"
-        "## 安装\n\n```bash\n./install.sh\n```\n"
-    )
-
-
-def _installer() -> str:
-    return """#!/usr/bin/env bash
-set -euo pipefail
-
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-target="${1:-all}"
-case "$target" in
-  all) destinations=("$HOME/.agents/skills" "$HOME/.claude/skills") ;;
-  codex) destinations=("$HOME/.agents/skills") ;;
-  claude) destinations=("$HOME/.claude/skills") ;;
-  *) printf 'usage: ./install.sh [all|codex|claude]\\n' >&2; exit 2 ;;
-esac
-for destination in "${destinations[@]}"; do
-  mkdir -p "$destination"
-  cp -R "$root/skills/." "$destination/"
-done
-"""
-
-
-def _pyproject(name: str) -> str:
-    return f"""[project]
-name = "{name}"
-version = "0.1.0"
-description = "{name} agent skill repository"
-requires-python = ">=3.11"
-"""
 
 
 def _skill_file(name: str) -> str:
@@ -655,17 +578,6 @@ description: "Use when the user asks for {name}."
 2. Perform the required work.
 3. Verify the result before reporting it.
 """
-
-
-def _brand_svg(name: str) -> str:
-    return (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" '
-        'viewBox="0 0 160 160">\n'
-        '  <rect width="160" height="160" fill="#183153"/>\n'
-        '  <text x="80" y="92" fill="#ffffff" font-family="sans-serif" '
-        f'font-size="28" text-anchor="middle">{name[:8]}</text>\n'
-        "</svg>\n"
-    )
 
 
 __all__ = ["PackageResult", "package_check", "publish_preflight", "scaffold_skill_repo"]

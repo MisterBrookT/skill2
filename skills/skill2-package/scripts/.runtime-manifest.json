@@ -2,7 +2,8 @@
   "commands": [
     "scaffold",
     "lint",
-    "package-check"
+    "package-check",
+    "publish-check"
   ],
   "dependencies": [
     "PyYAML>=6.0.2,<7",
@@ -11,11 +12,11 @@
   ],
   "files": {
     "skill2/__init__.py": {
-      "sha256": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+      "sha256": "ae739b3e3b817044ada923b44ba82c752fe8b7c2133908d58fff8fd4b5146298",
       "source": "src/skill2/__init__.py"
     },
     "skill2/bundle.py": {
-      "sha256": "1d3c7383274978210c05bd95fa9db9c9a0657e762028cdcbed1b4255265f7be4",
+      "sha256": "cff672d2283f68ec5c8a71ed15d3ddaea6f555e8f8b5a7f3e173c46b4cf5a76a",
       "source": "src/skill2/bundle.py"
     },
     "skill2/cli.py": {
@@ -31,7 +32,7 @@
       "source": "src/skill2/models.py"
     },
     "skill2/package.py": {
-      "sha256": "203daaad230ef6c5fc318d264e7355f20cfbe6191961a39068618bdc396a8634",
+      "sha256": "ca64a12f1e9c16eb9cd573d6386ba6118fe599f68676dbd07cedf3b5ce73d521",
       "source": "src/skill2/package.py"
     },
     "skill2/scan.py": {

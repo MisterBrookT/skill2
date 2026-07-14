@@ -426,8 +426,8 @@ cases:
 
     def test_all_repository_case_files_parse(self) -> None:
         suites = [load_case_suite(path) for path in sorted((ROOT / "cases").glob("*.yaml"))]
-        self.assertEqual(len(suites), 7)
-        self.assertEqual(sum(len(suite.cases) for suite in suites), 36)
+        self.assertEqual(len(suites), 6)
+        self.assertEqual(sum(len(suite.cases) for suite in suites), 33)
 
     def test_runner_checkpoints_and_skips_completed_trials_on_resume(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

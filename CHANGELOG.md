@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-07-14
+
+- Merge publish into `skill2-package` as an optional release phase; ship five top-level Skills.
+- Default to native distribution; require artifacts and checksums only when requested or required by a destination.
+- Keep `README.md` as canonical English; add localized READMEs according to the user's query language.
+
 ## 0.1.0 - 2026-07-14
 
 - Six-skill library: create, test, package, publish, audit, visualize.

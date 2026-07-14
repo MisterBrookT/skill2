@@ -221,7 +221,7 @@ class InstallScriptTest(unittest.TestCase):
             self.assertNotEqual(installed.read_text(encoding="utf-8"), "local change\n")
 
     def test_retired_skills_require_force_then_are_removed(self) -> None:
-        for retired_name in ("skill2-build", "skill2-prune"):
+        for retired_name in ("skill2-build", "skill2-prune", "skill2-publish"):
             with self.subTest(retired=retired_name):
                 with tempfile.TemporaryDirectory() as tmp:
                     home = Path(tmp)

@@ -17,7 +17,6 @@ SKILL_NAMES = (
     "skill2-audit",
     "skill2-create",
     "skill2-package",
-    "skill2-publish",
     "skill2-test",
     "skill2-visualize",
 )
@@ -147,7 +146,7 @@ class SmokeInstallUnitTest(unittest.TestCase):
                 "dest=\"$HOME/.agents/skills\"\n"
                 "mkdir -p \"$dest\"\n"
                 "cp -R \"$source\"/skills/* \"$dest/\"\n"
-                "printf 'Installed 6 skills\\n'\n",
+                "printf 'Installed 5 skills\\n'\n",
             )
             env = os.environ.copy()
             env["HOME"] = str(home)
@@ -238,7 +237,7 @@ class SmokeInstallUnitTest(unittest.TestCase):
                 "fi\n"
                 "if [ \"${1:-}\" = plugin ] && [ \"${2:-}\" = install ]; then\n"
                 "  src=\"$(cat \"$HOME/.claude/plugins/marketplace-src\")\"\n"
-                "  dest=\"$HOME/.claude/plugins/cache/skill2-marketplace/skill2/0.1.0\"\n"
+                "  dest=\"$HOME/.claude/plugins/cache/skill2-marketplace/skill2/0.1.1\"\n"
                 "  mkdir -p \"$dest\"\n"
                 "  cp -R \"$src\"/skills \"$dest/skills\"\n"
                 "  cp -R \"$src\"/.claude-plugin \"$dest/.claude-plugin\"\n"
@@ -330,7 +329,7 @@ class SmokeInstallUnitTest(unittest.TestCase):
                 "dest=\"$HOME/.agents/skills\"\n"
                 "mkdir -p \"$dest\"\n"
                 "cp -R \"$source\"/skills/* \"$dest/\"\n"
-                "rm -rf \"$dest/skill2-publish\"\n"
+                "rm -rf \"$dest/skill2-package\"\n"
                 "printf 'Installed incomplete skill set\\n'\n",
             )
             env = smoke.build_smoke_env(home, base=os.environ.copy())
@@ -347,7 +346,7 @@ class SmokeInstallUnitTest(unittest.TestCase):
             self.assertEqual(result["status"], "failed", result)
             err = (result.get("error") or "").lower()
             self.assertIn("missing", err)
-            self.assertIn("skill2-publish", err)
+            self.assertIn("skill2-package", err)
             self.assertFalse(smoke.is_mode_complete(run_dir, "npx"))
             ck = json.loads((run_dir / "npx.json").read_text(encoding="utf-8"))
             self.assertEqual(ck["status"], "failed")
@@ -392,7 +391,7 @@ class SmokeInstallUnitTest(unittest.TestCase):
 
 
 def _materialize_minimal_source(dest: Path) -> None:
-    """Copy six skills + manifests; enough for install-sh / fake npx / fake claude."""
+    """Copy five skills + manifests; enough for install-sh / fake npx / fake claude."""
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copytree(ROOT / "skills", dest / "skills")
     shutil.copytree(ROOT / ".claude-plugin", dest / ".claude-plugin")

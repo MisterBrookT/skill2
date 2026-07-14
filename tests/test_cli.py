@@ -191,11 +191,11 @@ Run scripts/run for deterministic work.
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], "1")
-        self.assertEqual(len(payload["skills"]), 6)
-        publish = next(skill for skill in payload["skills"] if skill["name"] == "skill2-publish")
-        self.assertEqual(publish["scope"], "project")
-        self.assertEqual(len(publish["hash"]), 64)
-        self.assertGreater(publish["body_tokens"], 0)
+        self.assertEqual(len(payload["skills"]), 5)
+        package = next(skill for skill in payload["skills"] if skill["name"] == "skill2-package")
+        self.assertEqual(package["scope"], "project")
+        self.assertEqual(len(package["hash"]), 64)
+        self.assertGreater(package["body_tokens"], 0)
 
     def test_scan_parses_yaml_and_markdown_resources(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -2,7 +2,7 @@
 
 ## Product
 
-Skill2 = Superpowers-style Skill Library。六个 Skills 管理其他 Skill Library。Skills 是产品；Python CLI 是确定性脚手架。
+Skill2 = Superpowers-style Skill Library。五个 Skills 管理其他 Skill Library。Skills 是产品；Python CLI 是确定性脚手架。
 
 ## Invariants
 
@@ -11,8 +11,8 @@ Skill2 = Superpowers-style Skill Library。六个 Skills 管理其他 Skill Libr
 - Agent 判断；CLI 做 scan/test/package/usage/report。
 - Usage 本地；不输出 prompt、transcript、绝对路径。
 - Suggest/Visualize 只读。
-- Package 无远端副作用。
-- Publish 远端动作需 dry-run + 用户确认。
+- Package 默认 native；artifact/release 按需。
+- Package 执行远端动作前列出目标与写入；用户明确要求该动作即授权。
 - Skill2 必须符合自己教的规则。
 
 ## Verify

@@ -12,7 +12,8 @@ TMP_ROOT=""
 STAGING=""
 # Newline-separated: list_target/install_target run with IFS=newline for TARGETS.
 RETIRED_SKILLS="skill2-build
-skill2-prune"
+skill2-prune
+skill2-publish"
 
 usage() {
   printf 'usage: ./install.sh [all|codex|claude] [--dry-run] [--force]\n' >&2

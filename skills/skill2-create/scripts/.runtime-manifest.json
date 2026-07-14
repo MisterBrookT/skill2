@@ -5,7 +5,7 @@
   "dependencies": [],
   "files": {
     "skill2/__init__.py": {
-      "sha256": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+      "sha256": "ae739b3e3b817044ada923b44ba82c752fe8b7c2133908d58fff8fd4b5146298",
       "source": "src/skill2/__init__.py"
     },
     "skill2/cli.py": {
