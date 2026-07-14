@@ -23,6 +23,20 @@
   <img src="docs/readme-hero.svg" alt="Skill2 terminal workflow">
 </p>
 
+## What Skill2 does
+
+**Want to create a skill using proven best practices?**
+Use `skill2-create` to define clear scope, triggers, structure, and resources.
+
+**Want to know whether a skill works?**
+Use `skill2-test` to test activation, outcomes, and routing in isolation.
+
+**Want to make your skills installable and share them?**
+Use `skill2-package` to build a clean install candidate, then `skill2-publish` to verify documentation, metadata, and public install paths.
+
+**Want to understand and maintain your skill library?**
+Use `skill2-audit` to find structural, safety, and behavior gaps. Use `skill2-visualize` to view inventory, usage, and test status.
+
 ## Install
 
 ### Claude Code

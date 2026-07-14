@@ -23,6 +23,20 @@
   <img src="docs/readme-hero.svg" alt="Skill2 终端工作流">
 </p>
 
+## Skill2 能做什么
+
+**想按成熟规范创建 Skill？**
+使用 `skill2-create` 定义清晰的范围、触发条件、结构与资源。
+
+**想知道 Skill 是否真的有效？**
+使用 `skill2-test` 在隔离环境中测试触发、效果与路由。
+
+**想让 Skills 可以安装和分享？**
+使用 `skill2-package` 生成干净的安装候选物，再用 `skill2-publish` 验证文档、元数据与公开安装路径。
+
+**想了解和维护整个 Skill Library？**
+使用 `skill2-audit` 查找结构、安全与行为缺口；使用 `skill2-visualize` 查看库存、使用情况与测试状态。
+
 ## 安装
 
 ### Claude Code
