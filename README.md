@@ -4,7 +4,10 @@
 
 <h1 align="center">Skill2</h1>
 
-<p align="center"><strong>Skills for your skills.</strong></p>
+<p align="center">
+  <strong>Skills for your skills.</strong><br>
+  Full-lifecycle management for Agent Skill libraries.
+</p>
 
 <p align="center">
   Test and audit Agent Skills before shipping. Catch bad triggers, weak evidence, and packaging defects—locally.<br>
@@ -24,19 +27,17 @@
   <img src="docs/readme-hero.svg" alt="Skill2 terminal workflow">
 </p>
 
-## What Skill2 does
+## Why Skill2
 
-**Want to create a skill using proven best practices?**
-Use `skill2-create` to define clear scope, triggers, structure, and resources.
+Writing one Agent Skill is easy. Maintaining twenty is harder.
 
-**Want to know whether a skill works?**
-Use `skill2-test` to test activation, outcomes, and routing in isolation.
+As your library grows, three questions matter:
 
-**Want to make your skills installable and share them?**
-Use `skill2-package` to choose the lightest distribution profile, prepare public documentation, and verify install paths or releases.
+- Does it trigger when it should—and stay quiet when it should not?
+- Does it improve the outcome?
+- Should it stay, be revised, or enter cleanup review?
 
-**Want to understand and maintain your skill library?**
-Use `skill2-audit` to find structural, safety, and behavior gaps. Use `skill2-visualize` to view inventory, usage, and test status.
+Skill2 treats Agent Skills as testable, auditable software units. Five focused Skills help agents create, test, audit, package, and visualize a library—while deterministic scripts keep evidence reproducible and local.
 
 ## Install
 
@@ -65,7 +66,7 @@ git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/inst
 
 Copies Skills only (`install.sh` supports `--dry-run` and conflict-gated `--force` from a checkout). Requires Git. [uv](https://docs.astral.sh/uv/) is needed only when a Skill runs its deterministic script. Skill scripts use `uv run --script`; first run may fetch declared dependencies into the uv cache; offline use requires a warm cache. Data stays local; no hosted service, telemetry, or PyPI install for users.
 
-## Skill Library
+## Five focused Skills
 
 | Skill | Agent uses it when |
 | --- | --- |
@@ -74,6 +75,8 @@ Copies Skills only (`install.sh` supports `--dry-run` and conflict-gated `--forc
 | `skill2-package` | Packaging, documenting, and optionally publishing a Skill repository. |
 | `skill2-audit` | Finding contract, safety, and behavior gaps. |
 | `skill2-visualize` | Viewing inventory, direct calls, zero-use candidates, test status, and conservative lifecycle review candidates. |
+
+## Try it
 
 Ask the agent directly:
 

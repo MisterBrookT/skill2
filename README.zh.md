@@ -4,7 +4,10 @@
 
 <h1 align="center">Skill2</h1>
 
-<p align="center"><strong>给 Skills 的 Skills。</strong></p>
+<p align="center">
+  <strong>给 Skills 的 Skills。</strong><br>
+  Agent Skill Library 全生命周期管理。
+</p>
 
 <p align="center">
   发布 Agent Skills 前完成测试与审计。在本地发现触发问题、证据不足与打包缺陷。<br>
@@ -24,19 +27,17 @@
   <img src="docs/readme-hero.svg" alt="Skill2 终端工作流">
 </p>
 
-## Skill2 能做什么
+## 为什么需要 Skill2
 
-**想按成熟规范创建 Skill？**
-使用 `skill2-create` 定义清晰的范围、触发条件、结构与资源。
+写出一个 Skill 不难。维护二十个更难。
 
-**想知道 Skill 是否真的有效？**
-使用 `skill2-test` 在隔离环境中测试触发、效果与路由。
+Skill Library 增长后，三个问题更重要：
 
-**想让 Skills 可以安装和分享？**
-使用 `skill2-package` 选择最轻的分发 profile，准备公开文档，并验证安装路径或 Release。
+- 该触发时是否触发，不该触发时是否保持安静？
+- 它是否真的改善结果？
+- 应该保留、修改，还是进入清理复审？
 
-**想了解和维护整个 Skill Library？**
-使用 `skill2-audit` 查找结构、安全与行为缺口；使用 `skill2-visualize` 查看库存、使用情况与测试状态。
+Skill2 把 Agent Skills 当成可测试、可审计的软件单元。五个专注 Skills 覆盖创建、测试、审计、打包与可视化；确定性脚本让证据可复现，并留在本地。
 
 ## 安装
 
@@ -65,7 +66,7 @@ git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/inst
 
 只复制 Skills（从 checkout 运行时 `install.sh` 支持 `--dry-run` 与冲突门控的 `--force`）。需要 Git。[uv](https://docs.astral.sh/uv/) 仅在 Skill 执行其确定性脚本时需要。Skill 脚本使用 `uv run --script`；首次运行可能将声明依赖拉取进 uv cache；离线使用需要已预热的 cache。数据只留本地；无托管服务、无 telemetry、用户无需 PyPI 安装。
 
-## Skill Library
+## 五个专注 Skills
 
 | Skill | Agent 何时使用 |
 | --- | --- |
@@ -75,7 +76,9 @@ git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/inst
 | `skill2-audit` | 查找契约、安全、行为缺口。 |
 | `skill2-visualize` | 查看库存、直接调用、零调用候选、测试状态，以及保守的生命周期复审候选项。 |
 
-直接告诉 Agent：
+## 直接试用
+
+告诉 Agent：
 
 ```text
 给这个工作流创建一个项目级 Skill。

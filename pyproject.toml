@@ -1,7 +1,7 @@
 [project]
 name = "skill2"
 version = "0.1.1"
-description = "Skills for your skills: local governance for agent skill libraries."
+description = "Skills for your skills. Create, test, audit, package, and visualize Agent Skill libraries—locally."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
