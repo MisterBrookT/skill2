@@ -309,6 +309,16 @@ Read [guide](references/guide.md#top) before doing deterministic work.
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout), [])
 
+    def test_version_flag_prints_version_and_exits_zero(self) -> None:
+        result = run_cli("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), "skill2 0.1.1")
+
+    def test_version_short_flag_prints_version_and_exits_zero(self) -> None:
+        result = run_cli("-V")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), "skill2 0.1.1")
+
 
 if __name__ == "__main__":
     unittest.main()

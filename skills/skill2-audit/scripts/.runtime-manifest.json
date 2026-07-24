@@ -14,7 +14,7 @@
       "source": "src/skill2/__init__.py"
     },
     "skill2/cli.py": {
-      "sha256": "614a10d8977fa98a8d5d9ca7851a214f13e4132a673e8ce5ef49dfc8f612a0f9",
+      "sha256": "31866a5627693f32bed04fc93f97d157c490bb549f862c0182c7d60700bd01c5",
       "source": "src/skill2/cli.py"
     },
     "skill2/lint.py": {

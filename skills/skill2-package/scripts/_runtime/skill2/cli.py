@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .models import SCHEMA_VERSION, Issue, LintResult, ScanResult, Severity
 
 _SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
@@ -302,7 +303,17 @@ def _path_uri(value: str) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="skill2")
+    parser = argparse.ArgumentParser(prog="skill2", add_help=False)
+    parser.add_argument(
+        "-h", "--help", action="help", help="show this help message and exit"
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"skill2 {__version__}",
+        help="print version and exit",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     scaffold = sub.add_parser("scaffold", help="create skill scaffolds")
