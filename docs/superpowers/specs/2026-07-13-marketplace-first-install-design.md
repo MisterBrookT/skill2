@@ -28,7 +28,7 @@ Skills 是产品。顶层 Python package 只服务仓库开发、生成与验证
 ### Claude Code：主入口
 
 ```text
-/plugin marketplace add MisterBrookT/skill2
+/plugin marketplace add blackblue-labs/skill2
 /plugin install skill2@skill2-marketplace
 ```
 
@@ -39,7 +39,7 @@ Plugin 安装整个仓库。六个 Skills、脚本、references 同时可用。
 进入 OpenAI curated marketplace 后，README 使用 `/plugins` 作为主入口。进入前使用：
 
 ```bash
-npx skills add MisterBrookT/skill2 -g -a codex -y
+npx skills add blackblue-labs/skill2 -g -a codex -y
 ```
 
 `npx skills add` 只复制 Skill 目录。因此每个 Skill 必须自包含，不得依赖仓库顶层 `src/`、`.venv` 或已安装的全局 `skill2` 命令。

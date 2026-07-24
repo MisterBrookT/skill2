@@ -2,7 +2,7 @@
 # shellcheck shell=bash
 set -eu
 
-REPOSITORY_URL="https://github.com/MisterBrookT/skill2.git"
+REPOSITORY_URL="https://github.com/blackblue-labs/skill2.git"
 MODE="all"
 MODE_SET=0
 DRY_RUN=0

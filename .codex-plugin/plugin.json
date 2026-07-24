@@ -6,8 +6,8 @@
     "name": "Yinghao Tang",
     "url": "https://github.com/MisterBrookT"
   },
-  "homepage": "https://github.com/MisterBrookT/skill2",
-  "repository": "https://github.com/MisterBrookT/skill2",
+  "homepage": "https://github.com/blackblue-labs/skill2",
+  "repository": "https://github.com/blackblue-labs/skill2",
   "license": "MIT",
   "keywords": [
     "agent-skills",
@@ -28,9 +28,9 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/MisterBrookT/skill2",
-    "privacyPolicyURL": "https://github.com/MisterBrookT/skill2/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/MisterBrookT/skill2/blob/main/TERMS.md",
+    "websiteURL": "https://github.com/blackblue-labs/skill2",
+    "privacyPolicyURL": "https://github.com/blackblue-labs/skill2/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/blackblue-labs/skill2/blob/main/TERMS.md",
     "defaultPrompt": [
       "Create a project-level skill for this workflow.",
       "Test whether this skill activates and improves the result.",

@@ -344,14 +344,14 @@ git commit -m "make skills self contained"
 - README primary Claude commands:
 
 ```text
-/plugin marketplace add MisterBrookT/skill2
+/plugin marketplace add blackblue-labs/skill2
 /plugin install skill2@skill2-marketplace
 ```
 
 - README current Codex command:
 
 ```bash
-npx skills add MisterBrookT/skill2 -g -a codex -y
+npx skills add blackblue-labs/skill2 -g -a codex -y
 ```
 
 - Contributor CLI remains `uv run skill2 ...` under development section only.

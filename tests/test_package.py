@@ -271,10 +271,10 @@ class PackageTest(unittest.TestCase):
         english = (ROOT / "README.md").read_text(encoding="utf-8")
         chinese = (ROOT / "README.zh.md").read_text(encoding="utf-8")
         claude_commands = (
-            "/plugin marketplace add MisterBrookT/skill2",
+            "/plugin marketplace add blackblue-labs/skill2",
             "/plugin install skill2@skill2-marketplace",
         )
-        codex_command = "npx skills add MisterBrookT/skill2 -g -a codex -y"
+        codex_command = "npx skills add blackblue-labs/skill2 -g -a codex -y"
         offline_boundary = re.compile(
             r"(?is)uv run --script.*first run.*uv cache|uv run --script.*首次.*uv cache|"
             r"offline.*warm cache|离线.*预热|离线.*已有.*cache",

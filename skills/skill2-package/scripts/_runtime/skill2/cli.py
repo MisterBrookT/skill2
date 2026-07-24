@@ -269,7 +269,7 @@ def _to_sarif(issues: tuple[Issue, ...], *, scan: ScanResult | None = None) -> d
         "tool": {
             "driver": {
                 "name": "skill2",
-                "informationUri": "https://github.com/MisterBrookT/skill2",
+                "informationUri": "https://github.com/blackblue-labs/skill2",
                 "rules": [{"id": rule_id} for rule_id in rule_ids],
             }
         },

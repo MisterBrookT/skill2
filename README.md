@@ -17,10 +17,10 @@
 <p align="center"><a href="README.zh.md">中文</a></p>
 
 <p align="center">
-  <img alt="GitHub stars" src="https://img.shields.io/github/stars/MisterBrookT/skill2?style=flat-square">
+  <img alt="GitHub stars" src="https://img.shields.io/github/stars/blackblue-labs/skill2?style=flat-square">
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-111111?style=flat-square">
   <img alt="Local first" src="https://img.shields.io/badge/data-local--only-111111?style=flat-square">
-  <img alt="MIT license" src="https://img.shields.io/github/license/MisterBrookT/skill2?style=flat-square&color=111111">
+  <img alt="MIT license" src="https://img.shields.io/github/license/blackblue-labs/skill2?style=flat-square&color=111111">
 </p>
 
 <p align="center">
@@ -44,7 +44,7 @@ Skill2 treats Agent Skills as testable, auditable software units. Five focused S
 ### Claude Code
 
 ```text
-/plugin marketplace add MisterBrookT/skill2
+/plugin marketplace add blackblue-labs/skill2
 /plugin install skill2@skill2-marketplace
 ```
 
@@ -53,7 +53,7 @@ Installs five self-contained Skills.
 ### Codex
 
 ```bash
-npx skills add MisterBrookT/skill2 -g -a codex -y
+npx skills add blackblue-labs/skill2 -g -a codex -y
 ```
 
 Copies the five self-contained Skills for Codex.
@@ -61,7 +61,7 @@ Copies the five self-contained Skills for Codex.
 ### Manual fallback
 
 ```bash
-git clone https://github.com/MisterBrookT/skill2.git ~/.skill2 && ~/.skill2/install.sh
+git clone https://github.com/blackblue-labs/skill2.git ~/.skill2 && ~/.skill2/install.sh
 ```
 
 Copies Skills only (`install.sh` supports `--dry-run` and conflict-gated `--force` from a checkout). Requires Git. [uv](https://docs.astral.sh/uv/) is needed only when a Skill runs its deterministic script. Skill scripts use `uv run --script`; first run may fetch declared dependencies into the uv cache; offline use requires a warm cache. Data stays local; no hosted service, telemetry, or PyPI install for users.

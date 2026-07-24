@@ -10,8 +10,8 @@ Skill2 = 五个自包含 Skills（create / test / package / audit / visualize）
 
 | 入口 | 命令 / 动作 | 状态 |
 | --- | --- | --- |
-| Claude Code 主入口 | `/plugin marketplace add MisterBrookT/skill2` + `/plugin install skill2@skill2-marketplace` | README 主路径；本地 marketplace + plugin install smoke 通过（临时 HOME） |
-| Codex 当前 | `npx skills add MisterBrookT/skill2 -g -a codex -y` | 文档化 + 本地源 smoke 通过；**未**宣称 curated `/plugins` 可搜索 |
+| Claude Code 主入口 | `/plugin marketplace add blackblue-labs/skill2` + `/plugin install skill2@skill2-marketplace` | README 主路径；本地 marketplace + plugin install smoke 通过（临时 HOME） |
+| Codex 当前 | `npx skills add blackblue-labs/skill2 -g -a codex -y` | 文档化 + 本地源 smoke 通过；**未**宣称 curated `/plugins` 可搜索 |
 | 手工 fallback | `git clone … && ./install.sh` | Skills-only；无 `uv tool install`；smoke 通过 |
 | 贡献者 CLI | `uv run skill2 …` | 仅 Development / CI |
 
